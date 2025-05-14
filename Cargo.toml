@@ -1,0 +1,17 @@
+[workspace]
+members = [
+    "frontend",
+    "backend",
+    "shared",
+]
+resolver = "3"
+
+[profile.release]
+opt-level = "z"
+codegen-units = 1
+lto = true
+strip = "symbols"
+
+[profile.dev]
+opt-level = 1
+

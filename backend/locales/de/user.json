@@ -1,0 +1,13 @@
+{
+  "delete": {
+    "success": "Benutzer erfolgreich gelöscht."
+  },
+  "fetch": {
+    "all_success": "Alle Benutzer erfolgreich ausgehändigt.",
+    "not_found": "Benutzer nicht gefunden.",
+    "success": "Benutzer erfolgreich abgeholt."
+  },
+  "update": {
+    "success": "Benutzer erfolgreich aktualisiert."
+  }
+}
