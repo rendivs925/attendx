@@ -7,6 +7,10 @@
 }
 
 @layer base {
+  .container {
+    @apply container mx-auto px-4;
+  }
+
   .section {
     @apply px-6 py-12 flex justify-center items-center;
   }
@@ -17,10 +21,6 @@
 
   .section-fullscreen {
     @apply min-h-screen bg-base-100;
-  }
-
-  .section-container {
-    @apply w-full max-w-2xl text-center;
   }
 
   h1,
@@ -57,7 +57,7 @@
   }
 
   p {
-    @apply text-base sm:text-lg mb-6;
+    @apply text-base sm:text-lg mb-6 max-w-[75ch];
   }
 
   .text-gradient {
