@@ -1,11 +1,23 @@
-use crate::components::layout::{footer::Footer, hero::Hero, navbar::Navbar};
+use crate::components::layout::{
+    about::About, blog::Blog, contact::Contact, faq::Faq, footer::Footer, hero::Hero,
+    navbar::Navbar, pricing::Pricing, privacy::Privacy, terms::Terms,
+};
 use leptos::prelude::*;
 
 #[component]
 pub fn Home() -> impl IntoView {
     view! {
-        <Navbar/>
-        <Hero/>
-        <Footer/>
+        <Navbar />
+        <main>
+            <Hero />
+            <About />
+            <Pricing />
+            <Faq />
+            <Blog />
+            <Contact />
+            // <Terms />
+            // <Privacy />
+            <Footer />
+        </main>
     }
 }

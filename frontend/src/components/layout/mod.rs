@@ -1,3 +1,11 @@
+pub mod about;
+pub mod blog;
+pub mod contact;
+pub mod faq;
+pub mod footer;
 pub mod hero;
 pub mod navbar;
-pub mod footer;
+pub mod pricing;
+pub mod privacy;
+pub mod section_container;
+pub mod terms;
