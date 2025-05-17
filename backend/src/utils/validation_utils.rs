@@ -1,12 +1,12 @@
 use actix_web::HttpResponse;
 use rayon::prelude::*;
 use serde_json::json;
-use std::sync::{Arc, Mutex};
-use std::{borrow::Cow, collections::HashMap};
+use shared::types::validation_fields::ValidationFields;
+use std::borrow::Cow;
+use std::collections::HashMap;
 use validator::{ValidationError, ValidationErrors};
 
 use crate::{
-    types::requests::auth::{login_request::LoginRequest, register_request::RegisterRequest},
     types::responses::api_response::{ApiResponse, ErrorDetails},
     utils::locale_utils::Messages,
     validations::{email::validate_email, name::validate_name, password::validate_password},
@@ -22,7 +22,7 @@ pub fn validate_fields(
     fields: Vec<FieldValidation>,
     messages: &Messages,
 ) -> Result<(), ValidationErrors> {
-    let errors = Arc::new(Mutex::new(ValidationErrors::new()));
+    let errors = std::sync::Mutex::new(ValidationErrors::new());
 
     fields.par_iter().for_each(|(field, value, validator)| {
         if let Err(error) = validator(value, messages) {
@@ -31,12 +31,41 @@ pub fn validate_fields(
         }
     });
 
-    let errors_lock = errors.lock().unwrap();
-    if errors_lock.errors().is_empty() {
+    let errors = errors.into_inner().unwrap();
+    if errors.errors().is_empty() {
         Ok(())
     } else {
-        Err(errors_lock.clone())
+        Err(errors)
     }
+}
+
+pub fn validate_data(data: &ValidationFields, messages: &Messages) -> Result<(), ValidationErrors> {
+    let mut fields: Vec<FieldValidation> = Vec::new();
+
+    if let Some(ref name) = data.name {
+        fields.push(("name", name.as_str(), validate_name));
+    }
+    if let Some(ref email) = data.email {
+        fields.push(("email", email.as_str(), validate_email));
+    }
+    if let Some(ref password) = data.password {
+        fields.push(("password", password.as_str(), validate_password));
+    }
+
+    if fields.is_empty() {
+        let mut errors = ValidationErrors::new();
+        errors.add(
+            "fields",
+            ValidationError {
+                code: "required".into(),
+                message: Some("At least one field is required.".into()),
+                params: Default::default(),
+            },
+        );
+        return Err(errors);
+    }
+
+    validate_fields(fields, messages)
 }
 
 pub fn handle_validation_error(errors: ValidationErrors, msg: &str) -> HttpResponse {
@@ -48,33 +77,6 @@ pub fn handle_validation_error(errors: ValidationErrors, msg: &str) -> HttpRespo
 
 pub fn handle_internal_error(err: impl ToString) -> HttpResponse {
     HttpResponse::InternalServerError().json(ApiResponse::<()>::error(err.to_string(), None))
-}
-
-pub fn validate_register_data(
-    data: &RegisterRequest,
-    messages: &Messages,
-) -> Result<(), ValidationErrors> {
-    validate_fields(
-        vec![
-            ("name", &data.name, validate_name),
-            ("email", &data.email, validate_email),
-            ("password", &data.password, validate_password),
-        ],
-        messages,
-    )
-}
-
-pub fn validate_login_data(
-    data: &LoginRequest,
-    messages: &Messages,
-) -> Result<(), ValidationErrors> {
-    validate_fields(
-        vec![
-            ("email", &data.email, validate_email),
-            ("password", &data.password, validate_password),
-        ],
-        messages,
-    )
 }
 
 pub fn add_error(code: &'static str, message: String, field_value: &str) -> ValidationError {

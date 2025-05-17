@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, web};
-
 use crate::{
     services::user_service::UserService,
     types::{
@@ -10,10 +8,11 @@ use crate::{
     },
     utils::{
         locale_utils::{Messages, get_lang},
-        validation_utils::{handle_internal_error, handle_validation_error, validate_fields},
+        validation_utils::{handle_internal_error, handle_validation_error, validate_data},
     },
-    validations::email::validate_email,
 };
+use actix_web::{HttpRequest, HttpResponse, web};
+use shared::types::validation_fields::ValidationFields;
 
 pub async fn get_all_users_handler(
     req: HttpRequest,
@@ -39,7 +38,12 @@ pub async fn get_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    if let Err(errs) = validate_fields(vec![("email", &email, validate_email)], &messages) {
+    let validation_input = ValidationFields {
+        email: Some(email.to_string()),
+        ..Default::default()
+    };
+
+    if let Err(errs) = validate_data(&validation_input, &messages) {
         let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
         return handle_validation_error(errs, &msg);
     }
@@ -66,7 +70,12 @@ pub async fn update_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    if let Err(errs) = validate_fields(vec![("email", &email, validate_email)], &messages) {
+    let validation_input = ValidationFields {
+        email: Some(email.to_string()),
+        ..Default::default()
+    };
+
+    if let Err(errs) = validate_data(&validation_input, &messages) {
         let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
         return handle_validation_error(errs, &msg);
     }
@@ -91,7 +100,12 @@ pub async fn delete_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    if let Err(errs) = validate_fields(vec![("email", &email, validate_email)], &messages) {
+    let validation_input = ValidationFields {
+        email: Some(email.to_string()),
+        ..Default::default()
+    };
+
+    if let Err(errs) = validate_data(&validation_input, &messages) {
         let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
         return handle_validation_error(errs, &msg);
     }
