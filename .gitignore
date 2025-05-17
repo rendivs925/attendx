@@ -1,3 +1,6 @@
+# === Vercel ===
+**/*.vercel
+
 # === Rust ===
 **/target/
 **/*.rs.bk
