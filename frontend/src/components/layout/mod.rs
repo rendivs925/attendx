@@ -7,5 +7,4 @@ pub mod hero;
 pub mod navbar;
 pub mod pricing;
 pub mod privacy;
-pub mod section_container;
 pub mod terms;
