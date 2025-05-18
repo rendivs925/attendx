@@ -1,13 +1,10 @@
-use actix_web::HttpResponse;
 use rayon::prelude::*;
-use serde_json::json;
-use shared::types::validation_fields::ValidationFields;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use validator::{ValidationError, ValidationErrors};
 
 use crate::{
-    types::responses::api_response::{ApiResponse, ErrorDetails},
+    types::requests::auth::validation_request::ValidationRequest,
     utils::locale_utils::Messages,
     validations::{email::validate_email, name::validate_name, password::validate_password},
 };
@@ -39,7 +36,24 @@ pub fn validate_fields(
     }
 }
 
-pub fn validate_data(data: &ValidationFields, messages: &Messages) -> Result<(), ValidationErrors> {
+pub fn validate_login(
+    email: impl Into<String>,
+    password: impl Into<String>,
+    messages: &Messages,
+) -> Result<(), ValidationErrors> {
+    let data = ValidationRequest {
+        name: None,
+        email: Some(email.into()),
+        password: Some(password.into()),
+    };
+
+    validate_data(&data, messages)
+}
+
+pub fn validate_data(
+    data: &ValidationRequest,
+    messages: &Messages,
+) -> Result<(), ValidationErrors> {
     let mut fields: Vec<FieldValidation> = Vec::new();
 
     if let Some(ref name) = data.name {
@@ -68,24 +82,13 @@ pub fn validate_data(data: &ValidationFields, messages: &Messages) -> Result<(),
     validate_fields(fields, messages)
 }
 
-pub fn handle_validation_error(errors: ValidationErrors, msg: &str) -> HttpResponse {
-    let error_details = ErrorDetails {
-        details: Some(json!(&errors)),
-    };
-    HttpResponse::BadRequest().json(ApiResponse::<()>::error(msg, Some(error_details)))
-}
-
-pub fn handle_internal_error(err: impl ToString) -> HttpResponse {
-    HttpResponse::InternalServerError().json(ApiResponse::<()>::error(err.to_string(), None))
-}
-
 pub fn add_error(code: &'static str, message: String, field_value: &str) -> ValidationError {
     ValidationError {
         code: code.into(),
         message: Some(Cow::Owned(message)),
         params: {
             let mut params = HashMap::new();
-            params.insert("value".into(), json!(field_value));
+            params.insert("value".into(), serde_json::json!(field_value));
             params
         },
     }

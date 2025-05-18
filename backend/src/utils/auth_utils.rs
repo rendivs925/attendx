@@ -1,16 +1,16 @@
 use crate::constants::{COOKIE_NAME, JWT_SECRET_KEY};
-use crate::types::auth::claims::Claims;
 use actix_web::cookie::time::Duration as CookieDuration;
 use actix_web::cookie::{Cookie, SameSite};
 use argon2::{
-    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
 };
 use chrono::{Duration as ChronoDuration, Utc};
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use log::{error, info};
 use phonenumber::{country, parse};
 use rand::rngs::OsRng;
+use shared::types::auth::claims::Claims;
 use validator::ValidationError;
 
 pub fn generate_cookie(token: String) -> Cookie<'static> {

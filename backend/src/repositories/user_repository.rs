@@ -1,12 +1,10 @@
 use crate::constants::USER_COL_NAME;
-use crate::{
-    config::database::get_collection, models::user_model::User,
-    types::requests::user::update_user_request::UpdateUserRequest,
-};
+use crate::{config::database::get_collection, models::user_model::User};
 use bson::Document;
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, to_document};
 use mongodb::{Client, Collection, error::Result};
+use shared::types::requests::user::update_user_request::UpdateUserRequest;
 
 pub struct UserRepository {
     pub collection: Collection<User>,

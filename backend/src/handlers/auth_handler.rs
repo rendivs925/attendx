@@ -1,19 +1,22 @@
 use actix_web::{HttpRequest, HttpResponse, web};
 use log::info;
-use shared::types::validation_fields::ValidationFields;
+use shared::types::requests::auth::login_request::LoginRequest;
+use shared::types::requests::auth::register_request::RegisterRequest;
+use shared::types::responses::api_response::ApiResponse;
+use shared::utils::validation_utils::validate_login;
+use shared::{
+    types::requests::auth::validation_request::ValidationRequest,
+    utils::{locale_utils::Messages, validation_utils::validate_data},
+};
 use std::sync::Arc;
 
+use crate::utils::locale_utils::get_lang;
 use crate::{
     constants::COOKIE_NAME,
     services::user_service::UserService,
-    types::{
-        requests::auth::{login_request::LoginRequest, register_request::RegisterRequest},
-        responses::api_response::ApiResponse,
-    },
     utils::{
         auth_utils::generate_cookie,
-        locale_utils::{Messages, get_lang},
-        validation_utils::{handle_internal_error, handle_validation_error, validate_data},
+        http_utils::{handle_internal_error, handle_validation_error},
     },
 };
 
@@ -26,7 +29,7 @@ pub async fn register_user_handler(
     let messages = Messages::new(lang);
     let data = new_user.into_inner();
 
-    let validation_data = ValidationFields {
+    let validation_data = ValidationRequest {
         name: Some(data.name.clone()),
         email: Some(data.email.clone()),
         password: Some(data.password.clone()),
@@ -56,14 +59,7 @@ pub async fn jwt_login_handler(
     let messages = Messages::new(lang);
     let data = credentials.into_inner();
 
-    // Wrap LoginRequest into ValidationFields (only email & password)
-    let validation_data = ValidationFields {
-        name: None,
-        email: Some(data.email.clone()),
-        password: Some(data.password.clone()),
-    };
-
-    if let Err(errs) = validate_data(&validation_data, &messages) {
+    if let Err(errs) = validate_login(&data.email, &data.password, &messages) {
         let err_msg =
             messages.get_auth_message("login.invalid_credentials", "Invalid login credentials");
         return handle_validation_error(errs, &err_msg);

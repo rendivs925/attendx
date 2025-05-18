@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
+use pages::not_found::NotFound;
 
 // Modules
 mod components;
@@ -8,6 +9,7 @@ mod pages;
 
 // Top-Level pages
 use crate::pages::home::Home;
+use crate::pages::login::Login;
 
 /// An app router which renders the homepage and handles 404's
 #[component]
@@ -28,6 +30,10 @@ pub fn App() -> impl IntoView {
         <Router>
             <Routes fallback=|| view! { NotFound }>
                 <Route path=path!("/") view=Home />
+                <Route path=path!("/auth/login") view=Login />
+                <ParentRoute path=path!("/auth") view=|| view! { <h1>Hello i am auth</h1> }>
+                    <Route path=path!("/auth/login") view=Login />
+                </ParentRoute>
             </Routes>
         </Router>
     }

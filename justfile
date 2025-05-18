@@ -4,11 +4,17 @@ default:
 build:
     cargo build --workspace
 
-serve-backend:
+sb:
     cd backend && cargo shuttle run
 
-serve-frontend:
+cb:
+    cd backend && cargo check
+
+sf:
     cd frontend && trunk serve --port 3000
 
-serve:
-    just serve-backend & just serve-frontend
+cf:
+    cd frontend && cargo check
+
+sa:
+    just sb & just sf

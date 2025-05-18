@@ -1,5 +1,5 @@
 #[derive(Default)]
-pub struct ValidationFields {
+pub struct ValidationRequest {
     pub name: Option<String>,
     pub email: Option<String>,
     pub password: Option<String>,

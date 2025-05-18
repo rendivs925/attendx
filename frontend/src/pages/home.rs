@@ -1,6 +1,6 @@
 use crate::components::layout::{
     about::About, blog::Blog, contact::Contact, faq::Faq, footer::Footer, hero::Hero,
-    navbar::Navbar, pricing::Pricing, privacy::Privacy, terms::Terms,
+    navbar::Navbar, pricing::Pricing,
 };
 use leptos::prelude::*;
 
@@ -15,8 +15,6 @@ pub fn Home() -> impl IntoView {
             <Faq />
             <Blog />
             <Contact />
-            // <Terms />
-            // <Privacy />
             <Footer />
         </main>
     }

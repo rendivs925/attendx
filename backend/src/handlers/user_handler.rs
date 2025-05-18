@@ -2,17 +2,18 @@ use std::sync::Arc;
 
 use crate::{
     services::user_service::UserService,
-    types::{
-        requests::user::update_user_request::UpdateUserRequest,
-        responses::api_response::ApiResponse,
-    },
     utils::{
-        locale_utils::{Messages, get_lang},
-        validation_utils::{handle_internal_error, handle_validation_error, validate_data},
+        http_utils::{handle_internal_error, handle_validation_error},
+        locale_utils::get_lang,
     },
 };
 use actix_web::{HttpRequest, HttpResponse, web};
-use shared::types::validation_fields::ValidationFields;
+use shared::types::requests::user::update_user_request::UpdateUserRequest;
+use shared::types::responses::api_response::ApiResponse;
+use shared::{
+    types::requests::auth::validation_request::ValidationRequest,
+    utils::{locale_utils::Messages, validation_utils::validate_data},
+};
 
 pub async fn get_all_users_handler(
     req: HttpRequest,
@@ -38,7 +39,7 @@ pub async fn get_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    let validation_input = ValidationFields {
+    let validation_input = ValidationRequest {
         email: Some(email.to_string()),
         ..Default::default()
     };
@@ -70,7 +71,7 @@ pub async fn update_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    let validation_input = ValidationFields {
+    let validation_input = ValidationRequest {
         email: Some(email.to_string()),
         ..Default::default()
     };
@@ -100,7 +101,7 @@ pub async fn delete_user_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    let validation_input = ValidationFields {
+    let validation_input = ValidationRequest {
         email: Some(email.to_string()),
         ..Default::default()
     };

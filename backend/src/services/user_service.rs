@@ -1,21 +1,20 @@
 use crate::{
     models::user_model::User,
     repositories::user_repository::UserRepository,
-    types::{
-        models::user::defaults::default_status,
-        requests::{
-            auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
-        },
-    },
-    utils::{
-        auth_utils::{generate_jwt, hash_password, verify_password},
-        locale_utils::Messages,
+    utils::auth_utils::{generate_jwt, hash_password, verify_password},
+};
+use shared::types::{
+    models::user::defaults::default_status,
+    requests::{
+        auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
     },
 };
+
 use anyhow::anyhow;
 use anyhow::{Context, Result};
 use bson::oid::ObjectId;
 use chrono::Utc;
+use shared::utils::locale_utils::Messages;
 use std::{collections::HashSet, sync::Arc};
 
 #[derive(Debug)]

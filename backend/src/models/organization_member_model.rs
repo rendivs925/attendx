@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::types::models::user::role::Role;
+use shared::types::models::user::role::Role;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct OrganizationMember {
