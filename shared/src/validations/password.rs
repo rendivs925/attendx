@@ -1,7 +1,10 @@
 use rayon::prelude::*;
 use validator::ValidationError;
 
-use crate::utils::{locale_utils::Messages, validation_utils::add_error};
+use crate::utils::{
+    locale_utils::Messages,
+    validation_utils::{add_error, format_error_message},
+};
 
 const MIN_PASSWORD_LENGTH: usize = 8;
 const MAX_PASSWORD_LENGTH: usize = 128;
@@ -12,7 +15,7 @@ fn has_min_length(password: &str, messages: &Messages) -> Result<(), String> {
         return Err(messages.get_validation_message(
             "password.too_short",
             &format!(
-                "Password must be at least {} char long",
+                "Password must be at least {} characters long",
                 MIN_PASSWORD_LENGTH
             ),
         ));
@@ -26,7 +29,7 @@ fn has_max_length(password: &str, messages: &Messages) -> Result<(), String> {
         return Err(messages.get_validation_message(
             "password.too_long",
             &format!(
-                "Password must be no more than {} char long",
+                "Password must be no more than {} characters long",
                 MAX_PASSWORD_LENGTH
             ),
         ));
@@ -103,7 +106,13 @@ pub fn validate_password(password: &str, messages: &Messages) -> Result<(), Vali
     if errors.is_empty() {
         Ok(())
     } else {
-        let concatenated_errors = errors.join(", ");
-        Err(add_error("password.invalid", concatenated_errors, password))
+        let raw_errors = errors.join(", ");
+        let formatted_error_message = format_error_message(&raw_errors);
+
+        Err(add_error(
+            "password.invalid",
+            formatted_error_message,
+            password,
+        ))
     }
 }

@@ -1,7 +1,10 @@
 use rayon::prelude::*;
 use validator::ValidationError;
 
-use crate::utils::{locale_utils::Messages, validation_utils::add_error};
+use crate::utils::{
+    locale_utils::Messages,
+    validation_utils::{add_error, format_error_message},
+};
 
 const MIN_NAME_LENGTH: usize = 2;
 const MAX_NAME_LENGTH: usize = 100;
@@ -63,7 +66,9 @@ pub fn validate_name(name: &str, messages: &Messages) -> Result<(), ValidationEr
     if errors.is_empty() {
         Ok(())
     } else {
-        let concatenated_errors = errors.join(", ");
-        Err(add_error("name.invalid", concatenated_errors, name))
+        let raw_errors = errors.join(", ");
+        let formatted_error_message = format_error_message(&raw_errors);
+
+        Err(add_error("name.invalid", formatted_error_message, name))
     }
 }

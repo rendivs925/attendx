@@ -7,6 +7,15 @@ use shared::utils::validation_utils::validate_login;
 use validator::ValidationErrors;
 
 #[component]
+fn ErrorList(errors: Vec<String>) -> impl IntoView {
+    view! {
+        <ul class="text-error text-sm mt-1 space-y-1">
+            {errors.into_iter().map(|msg| view! { <li>{msg}</li> }).collect::<Vec<_>>()}
+        </ul>
+    }
+}
+
+#[component]
 pub fn Login() -> impl IntoView {
     let email = NodeRef::<html::Input>::new();
     let password = NodeRef::<html::Input>::new();
@@ -15,22 +24,22 @@ pub fn Login() -> impl IntoView {
     let lang = Lang::En;
     let messages = Messages::new(lang);
 
-    fn validation_errors_to_string(errors: &ValidationErrors) -> String {
+    fn extract_field_errors<'a>(field: &'a str, errors: &'a ValidationErrors) -> Vec<String> {
         errors
             .field_errors()
-            .iter()
-            .flat_map(|(field, errors)| {
-                errors.iter().map(move |e| {
-                    let message = e
-                        .message
-                        .as_ref()
-                        .map(|m| m.to_string())
-                        .unwrap_or_else(|| "Invalid value".to_string());
-                    format!("{}: {}", field, message)
-                })
+            .get(field)
+            .map(|field_errors| {
+                field_errors
+                    .iter()
+                    .map(|e| {
+                        e.message
+                            .as_ref()
+                            .map(|m| m.to_string())
+                            .unwrap_or_else(|| "Invalid value".to_string())
+                    })
+                    .collect()
             })
-            .collect::<Vec<_>>()
-            .join(", ")
+            .unwrap_or_default()
     }
 
     let on_submit = {
@@ -58,35 +67,86 @@ pub fn Login() -> impl IntoView {
     };
 
     view! {
-        <div class="min-h-screen flex justify-center items-center bg-base-200">
+        <div class="min-h-screen flex items-center justify-center bg-base-200 px-4 py-8">
             <form
-                class="card w-full max-w-sm shadow-lg bg-base-100 p-6 space-y-4"
+                class="card w-full max-w-sm bg-base-100 shadow-xl p-8 space-y-6"
                 on:submit=on_submit
             >
-                <h2 class="text-2xl font-bold">"Login"</h2>
-                <input
-                    type="email"
-                    placeholder="email"
-                    class="input input-bordered w-full"
-                    node_ref=email
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    class="input input-bordered w-full"
-                    node_ref=password
-                />
-                <button class="btn btn-primary w-full" type="submit">
-                    "Login"
-                </button>
-                {move || {
-                    error
-                        .get()
-                        .map(|errs| {
-                            let msg = validation_errors_to_string(&errs);
-                            view! { <div class="text-error text-sm">{msg}</div> }
-                        })
-                }}
+                <h4 class="font-bold text-center">"Login"</h4>
+
+                <div class="form-control w-full space-y-2">
+                    <label class="label" for="email">
+                        <span class="label-text text-base font-medium">"Email"</span>
+                    </label>
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        class="input input-bordered w-full"
+                        node_ref=email
+                    />
+                    {move || {
+                        let errs = error.get();
+                        let email_errors = errs
+                            .as_ref()
+                            .map(|e| extract_field_errors("email", e))
+                            .unwrap_or_default();
+                        view! { <ErrorList errors=email_errors /> }
+                    }}
+                </div>
+
+                <div class="form-control w-full space-y-2">
+                    <label class="label" for="password">
+                        <span class="label-text text-base font-medium">"Password"</span>
+                    </label>
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        class="input input-bordered w-full"
+                        node_ref=password
+                    />
+                    {move || {
+                        let errs = error.get();
+                        let password_errors = errs
+                            .as_ref()
+                            .map(|e| extract_field_errors("password", e))
+                            .unwrap_or_default();
+                        view! { <ErrorList errors=password_errors /> }
+                    }}
+                </div>
+
+                <div class="form-control pt-2">
+                    <button type="submit" class="btn btn-primary w-full text-base font-semibold">
+                        "Login"
+                    </button>
+                </div>
+
+                <div class="divider text-sm text-muted">or</div>
+
+                <div class="form-control">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline w-full text-base font-semibold flex items-center justify-center gap-1"
+                        aria-label="Login with Google"
+                        on:click=|_| {
+                            log::info!("Google login clicked");
+                        }
+                        style="height: 40px; padding: 0 12px; line-height: 0;"
+                    >
+                        <img src="/images/google/google.svg" alt="Google Logo" class="w-8 h-8" />
+                        "Login with Google"
+                    </button>
+
+                </div>
+
+                <div class="text-center text-sm pt-4">
+                    <span>"Don't have an account? "</span>
+                    <a href="/register" class="text-primary hover:underline font-medium">
+                        "Register here"
+                    </a>
+                </div>
             </form>
         </div>
     }

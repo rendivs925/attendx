@@ -44,7 +44,7 @@ pub fn Navbar() -> impl IntoView {
                     </div>
                     <div class="navbar-end gap-4">
                         <button class="btn btn-base">Login</button>
-                        <button class="btn btn-primary">Sign Up</button>
+                        <button class="btn btn-primary">Register</button>
                     </div>
                 </div>
             </section>

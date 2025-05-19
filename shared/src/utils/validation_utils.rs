@@ -36,6 +36,50 @@ pub fn validate_fields(
     }
 }
 
+pub fn format_error_message(msg: &str) -> String {
+    let parts: Vec<&str> = msg.split(',').collect();
+    if parts.is_empty() {
+        return String::new();
+    }
+
+    let first = parts.get(0).map(|s| s.trim()).unwrap_or("").to_string();
+
+    let first_prefix = first
+        .split_whitespace()
+        .next()
+        .filter(|s| s.len() >= 2)
+        .unwrap_or("");
+
+    let rest = parts
+        .iter()
+        .skip(1)
+        .map(|part| {
+            let trimmed = part.trim();
+            if trimmed.starts_with(first_prefix) {
+                trimmed[first_prefix.len()..].trim_start()
+            } else {
+                trimmed
+            }
+        })
+        .map(|s| {
+            let mut chars = s.chars();
+            match chars.next() {
+                Some(first_char) => {
+                    format!("{}{}", first_char.to_lowercase(), chars.collect::<String>())
+                }
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    if rest.is_empty() {
+        first
+    } else {
+        format!("{}, {}", first, rest)
+    }
+}
+
 pub fn validate_login(
     email: impl Into<String>,
     password: impl Into<String>,

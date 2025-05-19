@@ -2,7 +2,10 @@ use email_address::EmailAddress;
 use rayon::prelude::*;
 use validator::ValidationError;
 
-use crate::utils::{locale_utils::Messages, validation_utils::add_error};
+use crate::utils::{
+    locale_utils::Messages,
+    validation_utils::{add_error, format_error_message},
+};
 
 const MIN_EMAIL_LENGTH: usize = 5;
 const MAX_EMAIL_LENGTH: usize = 254;
@@ -217,8 +220,10 @@ pub fn validate_email(email: &str, messages: &Messages) -> Result<(), Validation
     }
 
     if !errors.is_empty() {
-        let concatenated_errors = errors.join(", ");
-        return Err(add_error("email.invalid", concatenated_errors, email));
+        let raw_errors = errors.join(", ");
+        let formatted_error_message = format_error_message(&raw_errors);
+
+        return Err(add_error("email.invalid", formatted_error_message, email));
     }
 
     Ok(())
