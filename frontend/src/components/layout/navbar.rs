@@ -24,7 +24,7 @@ pub fn Navbar() -> impl IntoView {
         ("/#contact", "Contact"),
     ];
 
-    let is_open = create_rw_signal(false);
+    let is_open = RwSignal::new(false);
 
     view! {
         <nav class="navbar fixed z-50 w-full bg-base-100/80 backdrop-blur shadow-sm transition-all duration-300">

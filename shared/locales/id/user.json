@@ -1,13 +1,13 @@
 {
   "delete": {
-    "success": "User successfully deleted."
+    "success": "Pengguna berhasil dihapus."
   },
   "fetch": {
-    "all_success": "Fetched all users successfully.",
-    "not_found": "User not found.",
-    "success": "User fetched successfully."
+    "all_success": "Mengambil semua pengguna dengan sukses.",
+    "not_found": "Pengguna tidak ditemukan.",
+    "success": "Pengguna sukses diambil."
   },
   "update": {
-    "success": "User updated successfully."
+    "success": "Pengguna telah diperbarui dengan sukses."
   }
 }

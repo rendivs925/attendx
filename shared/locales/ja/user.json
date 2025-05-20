@@ -1,13 +1,13 @@
 {
   "delete": {
-    "success": "User successfully deleted."
+    "success": "ユーザーが正常に削除しました."
   },
   "fetch": {
-    "all_success": "Fetched all users successfully.",
-    "not_found": "User not found.",
-    "success": "User fetched successfully."
+    "all_success": "すべてのユーザーが正常に取得しました.",
+    "not_found": "ユーザーが見つかりません.",
+    "success": "ユーザは正常に取得しました."
   },
   "update": {
-    "success": "User updated successfully."
+    "success": "ユーザーが正常に更新しました."
   }
 }
