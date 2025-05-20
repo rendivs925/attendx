@@ -11,10 +11,11 @@ shared = { path = "../shared/" }
 validator = { version = "0.19", features = ["derive"] }
 leptos = { version = "0.7", features = ["csr"] }
 leptos_meta = { version = "0.7" }
-leptos_router = { version = "0.7" }
+leptos_router = "0.7"
 console_log = "1"
 log = "0.4"
 console_error_panic_hook = "0.1"
+leptos-use = "0.15.7"
 
 # utils
 # strum = { version = "0.25", features = ["derive", "strum_macros"] }

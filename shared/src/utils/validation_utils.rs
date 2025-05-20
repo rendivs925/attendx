@@ -94,6 +94,21 @@ pub fn validate_login(
     validate_data(&data, messages)
 }
 
+pub fn validate_register(
+    name: impl Into<String>,
+    email: impl Into<String>,
+    password: impl Into<String>,
+    messages: &Messages,
+) -> Result<(), ValidationErrors> {
+    let data = ValidationRequest {
+        name: Some(name.into()),
+        email: Some(email.into()),
+        password: Some(password.into()),
+    };
+
+    validate_data(&data, messages)
+}
+
 pub fn validate_data(
     data: &ValidationRequest,
     messages: &Messages,

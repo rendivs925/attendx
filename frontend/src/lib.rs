@@ -1,6 +1,8 @@
+use components::layout::main_layout::MainLayout;
 use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
+use pages::register::Register;
 
 mod components;
 mod pages;
@@ -22,8 +24,11 @@ pub fn App() -> impl IntoView {
 
         <Router>
             <Routes fallback=|| view! { NotFound }>
-                <Route path=path!("/") view=Home />
-                <Route path=path!("/auth/login") view=Login />
+                <ParentRoute path=path!("") view=MainLayout>
+                    <Route path=path!("/") view=Home />
+                    <Route path=path!("/auth/login") view=Login />
+                    <Route path=path!("/auth/register") view=Register />
+                </ParentRoute>
             </Routes>
         </Router>
     }

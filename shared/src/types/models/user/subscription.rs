@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::types::models::organization::organization_limit::OrganizationLimits;
@@ -14,6 +14,18 @@ pub struct Subscription {
 impl Subscription {
     pub fn is_active(&self) -> bool {
         self.status == SubscriptionStatus::Active && Utc::now() < self.expiry_date
+    }
+}
+
+impl Default for Subscription {
+    fn default() -> Self {
+        let now = Utc::now();
+        Self {
+            plan: SubscriptionPlan::default(),
+            status: SubscriptionStatus::default(),
+            start_date: now,
+            expiry_date: now + Duration::days(30),
+        }
     }
 }
 
@@ -51,9 +63,21 @@ impl SubscriptionPlan {
     }
 }
 
+impl Default for SubscriptionPlan {
+    fn default() -> Self {
+        SubscriptionPlan::Free
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum SubscriptionStatus {
     Active,
     Expired,
     Canceled,
+}
+
+impl Default for SubscriptionStatus {
+    fn default() -> Self {
+        SubscriptionStatus::Active
+    }
 }

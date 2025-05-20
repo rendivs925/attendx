@@ -2,7 +2,7 @@ use crate::types::models::user::defaults::default_subscription_plan;
 use crate::types::models::user::subscription::SubscriptionPlan;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct RegisterRequest {
     pub name: String,
 

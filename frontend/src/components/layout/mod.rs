@@ -4,6 +4,7 @@ pub mod contact;
 pub mod faq;
 pub mod footer;
 pub mod hero;
+pub mod main_layout;
 pub mod navbar;
 pub mod pricing;
 pub mod privacy;
