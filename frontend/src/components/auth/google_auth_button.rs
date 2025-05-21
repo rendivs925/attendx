@@ -1,7 +1,11 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn GoogleAuthButton(on_click: Callback<()>) -> impl IntoView {
+pub fn GoogleAuthButton() -> impl IntoView {
+    let on_click = Callback::new(|_| {
+        log::info!("Google button clicked");
+    });
+
     view! {
         <button
             type="button"

@@ -1,6 +1,6 @@
 POST http://localhost:8000/auth/login
 Content-Type: application/json
-Accept-Language: ja
+Accept-Language: en
 
 {
   "email": "h1@gmail.com",
@@ -16,7 +16,7 @@ Accept-Language: en
 
 {
   "name": "user",
-  "email": "h1j@gmail.com",
+  "email": "h1@gmail.com",
   "password": "Securepassword123.",
   "subscription_plan": "Free"
 }

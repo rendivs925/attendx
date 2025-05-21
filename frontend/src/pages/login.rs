@@ -2,9 +2,7 @@ use crate::components::auth::{
     auth_form_container::AuthFormContainer, auth_redirect_text::AuthRedirectText,
     google_auth_button::GoogleAuthButton, input_field::InputField,
 };
-use crate::hooks::use_login_form::use_login_form;
-use crate::hooks::use_login_form::LoginFormState;
-use leptos::callback::Callback;
+use crate::hooks::use_login_form::{use_login_form, LoginFormState};
 use leptos::component;
 use leptos::prelude::*;
 use leptos::view;
@@ -18,10 +16,6 @@ pub fn Login() -> impl IntoView {
         error,
         on_submit,
     } = use_login_form();
-
-    let on_google_click = Callback::new(|_| {
-        log::info!("Google button clicked");
-    });
 
     view! {
         <AuthFormContainer>
@@ -53,7 +47,7 @@ pub fn Login() -> impl IntoView {
 
             <div class="divider text-sm text-muted">"or"</div>
 
-            <GoogleAuthButton on_click=on_google_click />
+            <GoogleAuthButton />
 
             <AuthRedirectText
                 prompt="Don't have an account? "

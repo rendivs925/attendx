@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos_router::nested_router::Outlet;
 
-use crate::components::layout::navbar::Navbar;
+use crate::components::{layout::navbar::Navbar, ui::toast::Toast};
 
 #[component]
 pub fn MainLayout() -> impl IntoView {
@@ -11,6 +11,8 @@ pub fn MainLayout() -> impl IntoView {
             <main>
                 <Outlet />
             </main>
+            <Toast />
         </>
+
     }
 }

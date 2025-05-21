@@ -3,10 +3,12 @@ use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
 use pages::register::Register;
+use store::auth::state::AuthStore;
 
 mod components;
 mod hooks;
 mod pages;
+mod store;
 
 use crate::pages::home::Home;
 use crate::pages::login::Login;
@@ -14,6 +16,9 @@ use crate::pages::login::Login;
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+
+    let auth = create_rw_signal(AuthStore::default());
+    provide_context(auth);
 
     view! {
         <Html attr:lang="en" attr:dir="ltr" attr:data-theme="light" />

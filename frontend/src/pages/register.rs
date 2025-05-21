@@ -48,10 +48,6 @@ pub fn Register() -> impl IntoView {
         }
     };
 
-    let on_google_click = Callback::new(|_| {
-        log::info!("Google register clicked");
-    });
-
     view! {
         <AuthFormContainer>
             <h3 class="font-bold text-center">"Register"</h3>
@@ -90,7 +86,7 @@ pub fn Register() -> impl IntoView {
 
             <div class="divider text-sm text-muted">"or"</div>
 
-            <GoogleAuthButton on_click=on_google_click />
+            <GoogleAuthButton />
 
             <AuthRedirectText
                 prompt="Already have an account? "

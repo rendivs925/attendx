@@ -1,7 +1,10 @@
+use crate::store::auth::actions::sign_in_with_email;
+use crate::store::auth::state::use_auth_store;
+use leptos::callback::Callback;
 use leptos::html;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos::web_sys::SubmitEvent;
-use shared::types::requests::auth::login_request::LoginRequest;
 use shared::utils::locale_utils::{Lang, Messages};
 use shared::utils::validation_utils::validate_login;
 use std::sync::Arc;
@@ -15,16 +18,19 @@ pub struct LoginFormState {
 }
 
 pub fn use_login_form() -> LoginFormState {
+    let auth = use_auth_store();
+
     let email = NodeRef::<html::Input>::new();
     let password = NodeRef::<html::Input>::new();
-    let error = RwSignal::new(None::<ValidationErrors>);
-    let messages = Arc::new(Messages::new(Lang::En)); // Rc is enough here
+    let error = create_rw_signal(None::<ValidationErrors>);
+    let messages = Arc::new(Messages::new(Lang::En));
 
     let on_submit = {
         let email = email.clone();
         let password = password.clone();
         let error = error.clone();
         let messages = messages.clone();
+        let auth = auth.clone();
 
         Callback::new(move |ev: SubmitEvent| {
             ev.prevent_default();
@@ -35,13 +41,19 @@ pub fn use_login_form() -> LoginFormState {
             match validate_login(&email_value, &password_value, &messages) {
                 Ok(_) => {
                     error.set(None);
-                    let form_data = LoginRequest {
-                        email: email_value,
-                        password: password_value,
-                    };
-                    log::info!("Login valid: {:?}", form_data);
+                    spawn_local({
+                        let auth = auth.clone();
+                        let email_value = email_value.clone();
+                        let password_value = password_value.clone();
+
+                        async move {
+                            sign_in_with_email(auth, email_value, password_value).await;
+                        }
+                    });
                 }
-                Err(e) => error.set(Some(e)),
+                Err(e) => {
+                    error.set(Some(e));
+                }
             }
         })
     };

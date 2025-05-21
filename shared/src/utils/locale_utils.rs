@@ -30,7 +30,7 @@ fn load_message_file(lang: Lang, namespace: &str) -> Value {
         Lang::Ja => "ja",
     };
 
-    let file_path = Path::new("../../locales")
+    let file_path = Path::new("./shared/locales")
         .join(lang_folder)
         .join(format!("{namespace}.json"));
 
