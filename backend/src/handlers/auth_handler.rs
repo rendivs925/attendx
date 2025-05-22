@@ -3,6 +3,7 @@ use log::info;
 use shared::types::requests::auth::login_request::LoginRequest;
 use shared::types::requests::auth::register_request::RegisterRequest;
 use shared::types::responses::api_response::ApiResponse;
+use shared::types::responses::user_response::UserResponse;
 use shared::utils::validation_utils::validate_login;
 use shared::{
     types::requests::auth::validation_request::ValidationRequest,
@@ -72,9 +73,11 @@ pub async fn jwt_login_handler(
         Ok((user, token)) => {
             info!("User {} successfully logged in.", data.email);
             let cookie = generate_cookie(token);
+            let user_response = UserResponse::from(user);
+
             HttpResponse::Ok().cookie(cookie).json(ApiResponse::success(
                 messages.get_auth_message("login.success", "Login successful"),
-                user,
+                user_response,
             ))
         }
         Err(err) => {

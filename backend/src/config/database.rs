@@ -1,13 +1,11 @@
-use crate::{
-    constants::{DB_NAME, MONGODB_URI, USER_COL_NAME},
-    models::user_model::User,
-};
+use crate::constants::{DB_NAME, MONGODB_URI, USER_COL_NAME};
 use mongodb::{
     Client, Collection, IndexModel,
     bson::doc,
     error::Error as MongoError,
     options::{ClientOptions, IndexOptions},
 };
+use shared::models::user_model::User;
 
 pub async fn connect_to_database() -> Result<Client, MongoError> {
     let client_uri = (*MONGODB_URI).as_str();

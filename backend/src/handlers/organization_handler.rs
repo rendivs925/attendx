@@ -1,9 +1,9 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, web};
 use std::sync::Arc;
 
-use crate::{
-    models::organization_model::Organization, services::organization_service::OrganizationService,
-};
+use shared::models::organization_model::Organization;
+
+use crate::services::organization_service::OrganizationService;
 
 pub async fn create_organization_handler(
     organization_service: web::Data<Arc<OrganizationService>>,

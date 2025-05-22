@@ -1,12 +1,14 @@
 use crate::{
-    models::user_model::User,
     repositories::user_repository::UserRepository,
     utils::auth_utils::{generate_jwt, hash_password, verify_password},
 };
-use shared::types::{
-    models::user::defaults::default_status,
-    requests::{
-        auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
+use shared::{
+    models::user_model::User,
+    types::{
+        models::user::defaults::default_status,
+        requests::{
+            auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
+        },
     },
 };
 

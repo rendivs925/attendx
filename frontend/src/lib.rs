@@ -17,7 +17,7 @@ use crate::pages::login::Login;
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
-    let auth = create_rw_signal(AuthStore::default());
+    let auth = RwSignal::new(AuthStore::default());
     provide_context(auth);
 
     view! {

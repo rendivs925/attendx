@@ -1,11 +1,11 @@
-use bson::oid::ObjectId;
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use shared::types::models::user::{
+use crate::types::models::user::{
     defaults::{default_status, default_subscription_plan},
     subscription::SubscriptionPlan,
     user_status::UserStatus,
 };
+use bson::oid::ObjectId;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

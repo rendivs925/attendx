@@ -2,7 +2,7 @@ use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use shared::types::models::attendance::{
+use crate::types::models::attendance::{
     attendance_method::AttendanceMethod, attendance_status::AttendanceStatus,
     attendance_type::AttendanceType, geolocation::GeoLocation,
 };

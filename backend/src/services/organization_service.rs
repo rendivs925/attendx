@@ -1,8 +1,6 @@
-use crate::{
-    models::organization_model::Organization,
-    repositories::organization_repository::OrganizationRepository,
-};
+use crate::repositories::organization_repository::OrganizationRepository;
 use anyhow::Result;
+use shared::models::organization_model::Organization;
 use std::sync::Arc;
 
 pub struct OrganizationService {

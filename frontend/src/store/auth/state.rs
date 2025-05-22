@@ -1,8 +1,6 @@
-use leptos::{
-    context::{provide_context, use_context},
-    prelude::RwSignal,
-};
+use leptos::{context::use_context, prelude::RwSignal};
 use serde::{Deserialize, Serialize};
+use shared::types::responses::user_response::UserResponse;
 
 #[derive(Debug, Default, Clone)]
 pub struct AuthStore {
@@ -10,14 +8,15 @@ pub struct AuthStore {
     pub error_message: RwSignal<Option<String>>,
     pub toast_message: RwSignal<Option<String>>,
     pub is_toast_visible: RwSignal<bool>,
-    pub user: RwSignal<Option<AuthUser>>,
+    pub toast_type: RwSignal<Option<ToastType>>,
+    pub user: RwSignal<Option<UserResponse>>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct AuthUser {
-    pub name: RwSignal<String>,
-    pub email: RwSignal<String>,
-    pub avatar_url: RwSignal<Option<String>>,
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ToastType {
+    Error,
+    Success,
+    Info,
 }
 
 pub fn use_auth_store() -> RwSignal<AuthStore> {

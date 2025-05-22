@@ -36,6 +36,6 @@ Accept-Language: ja
 
 {
   "name": "updatedUser1",
-  "email": "h1@gmail.com",
+  "email": "h4@gmail.com",
   "subscription_plan": "Pro"
 }

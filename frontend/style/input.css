@@ -64,3 +64,17 @@
     @apply bg-gradient-to-r from-primary via-primary to-primary bg-clip-text text-transparent;
   }
 }
+
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-toast-progress {
+  animation: toast-progress 3s linear forwards;
+}
+

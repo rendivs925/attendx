@@ -1,7 +1,4 @@
-use serde_json::Value;
 use shared::utils::locale_utils::Lang;
-use std::fs;
-use std::path::Path;
 
 pub fn get_lang(req: &actix_web::HttpRequest) -> Lang {
     req.headers()

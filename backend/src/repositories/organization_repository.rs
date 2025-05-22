@@ -1,8 +1,9 @@
+use crate::config::database::get_collection;
 use crate::constants::ORGANIZATIONS_COL_NAME;
-use crate::{config::database::get_collection, models::organization_model::Organization};
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, oid::ObjectId, to_document};
 use mongodb::{Client, Collection, error::Result};
+use shared::models::organization_model::Organization;
 
 pub struct OrganizationRepository {
     collection: Collection<Organization>,
