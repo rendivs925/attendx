@@ -18,6 +18,7 @@ Accept-Language: en
   "name": "user",
   "email": "h1@gmail.com",
   "password": "Securepassword123.",
+  "password_confirmation": "Surepassword123.",
   "subscription_plan": "Free"
 }
 

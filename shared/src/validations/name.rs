@@ -50,7 +50,7 @@ fn has_valid_chars(name: &str, messages: &Messages) -> Result<(), String> {
     }
 }
 
-pub fn validate_name(name: &str, messages: &Messages) -> Result<(), ValidationError> {
+pub fn validate_name(messages: &Messages, name: &str) -> Result<(), ValidationError> {
     let validations = [
         is_not_empty,
         has_min_length,

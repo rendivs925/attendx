@@ -6,14 +6,28 @@ use validator::{ValidationError, ValidationErrors};
 use crate::{
     types::requests::auth::validation_request::ValidationRequest,
     utils::locale_utils::Messages,
-    validations::{email::validate_email, name::validate_name, password::validate_password},
+    validations::{
+        email::validate_email, name::validate_name, password::validate_password,
+        password_confirmation::validate_password_confirmation,
+    },
 };
 
-type FieldValidation<'a> = (
-    &'static str,
-    &'a str,
-    fn(&'a str, &Messages) -> Result<(), ValidationError>,
-);
+pub type ValidatorFn =
+    Box<dyn Fn(&Messages, &str, Option<&str>) -> Result<(), ValidationError> + Send + Sync>;
+
+pub struct FieldValidation<'a> {
+    pub field_name: &'static str,
+    pub value: &'a str,
+    pub value2: Option<&'a str>,
+    pub validator: ValidatorFn,
+}
+
+fn into_validator<F>(f: F) -> ValidatorFn
+where
+    F: Fn(&Messages, &str) -> Result<(), ValidationError> + Send + Sync + 'static,
+{
+    Box::new(move |messages, value, _| f(messages, value))
+}
 
 pub fn validate_fields(
     fields: Vec<FieldValidation>,
@@ -21,10 +35,9 @@ pub fn validate_fields(
 ) -> Result<(), ValidationErrors> {
     let errors = std::sync::Mutex::new(ValidationErrors::new());
 
-    fields.par_iter().for_each(|(field, value, validator)| {
-        if let Err(error) = validator(value, messages) {
-            let mut errors_lock = errors.lock().unwrap();
-            errors_lock.add(field, error);
+    fields.par_iter().for_each(|f| {
+        if let Err(error) = (f.validator)(messages, f.value, f.value2) {
+            errors.lock().unwrap().add(f.field_name, error);
         }
     });
 
@@ -42,8 +55,7 @@ pub fn format_error_message(msg: &str) -> String {
         return String::new();
     }
 
-    let first = parts.get(0).map(|s| s.trim()).unwrap_or("").to_string();
-
+    let first = parts[0].trim();
     let first_prefix = first
         .split_whitespace()
         .next()
@@ -64,9 +76,7 @@ pub fn format_error_message(msg: &str) -> String {
         .map(|s| {
             let mut chars = s.chars();
             match chars.next() {
-                Some(first_char) => {
-                    format!("{}{}", first_char.to_lowercase(), chars.collect::<String>())
-                }
+                Some(c) => format!("{}{}", c.to_lowercase(), chars.collect::<String>()),
                 None => String::new(),
             }
         })
@@ -74,7 +84,7 @@ pub fn format_error_message(msg: &str) -> String {
         .join(", ");
 
     if rest.is_empty() {
-        first
+        first.to_string()
     } else {
         format!("{}, {}", first, rest)
     }
@@ -86,24 +96,9 @@ pub fn validate_login(
     messages: &Messages,
 ) -> Result<(), ValidationErrors> {
     let data = ValidationRequest {
-        name: None,
         email: Some(email.into()),
         password: Some(password.into()),
-    };
-
-    validate_data(&data, messages)
-}
-
-pub fn validate_register(
-    name: impl Into<String>,
-    email: impl Into<String>,
-    password: impl Into<String>,
-    messages: &Messages,
-) -> Result<(), ValidationErrors> {
-    let data = ValidationRequest {
-        name: Some(name.into()),
-        email: Some(email.into()),
-        password: Some(password.into()),
+        ..Default::default()
     };
 
     validate_data(&data, messages)
@@ -113,16 +108,45 @@ pub fn validate_data(
     data: &ValidationRequest,
     messages: &Messages,
 ) -> Result<(), ValidationErrors> {
-    let mut fields: Vec<FieldValidation> = Vec::new();
+    let mut fields = Vec::new();
 
-    if let Some(ref name) = data.name {
-        fields.push(("name", name.as_str(), validate_name));
+    if let Some(name) = data.name.as_deref() {
+        fields.push(FieldValidation {
+            field_name: "name",
+            value: name,
+            value2: None,
+            validator: into_validator(validate_name),
+        });
     }
-    if let Some(ref email) = data.email {
-        fields.push(("email", email.as_str(), validate_email));
+
+    if let Some(email) = data.email.as_deref() {
+        fields.push(FieldValidation {
+            field_name: "email",
+            value: email,
+            value2: None,
+            validator: into_validator(validate_email),
+        });
     }
-    if let Some(ref password) = data.password {
-        fields.push(("password", password.as_str(), validate_password));
+
+    if let Some(password) = data.password.as_deref() {
+        fields.push(FieldValidation {
+            field_name: "password",
+            value: password,
+            value2: None,
+            validator: into_validator(validate_password),
+        });
+    }
+
+    if let (Some(password), Some(confirm)) = (
+        data.password.as_deref(),
+        data.password_confirmation.as_deref(),
+    ) {
+        fields.push(FieldValidation {
+            field_name: "password_confirmation",
+            value: password,
+            value2: Some(confirm),
+            validator: Box::new(validate_password_confirmation),
+        });
     }
 
     if fields.is_empty() {
@@ -142,13 +166,12 @@ pub fn validate_data(
 }
 
 pub fn add_error(code: &'static str, message: String, field_value: &str) -> ValidationError {
+    let mut params = HashMap::new();
+    params.insert("value".into(), serde_json::json!(field_value));
+
     ValidationError {
         code: code.into(),
         message: Some(Cow::Owned(message)),
-        params: {
-            let mut params = HashMap::new();
-            params.insert("value".into(), serde_json::json!(field_value));
-            params
-        },
+        params,
     }
 }

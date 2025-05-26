@@ -87,7 +87,7 @@ fn has_special_char(password: &str, messages: &Messages) -> Result<(), String> {
     Ok(())
 }
 
-pub fn validate_password(password: &str, messages: &Messages) -> Result<(), ValidationError> {
+pub fn validate_password(messages: &Messages, password: &str) -> Result<(), ValidationError> {
     let validations = vec![
         has_min_length,
         has_max_length,

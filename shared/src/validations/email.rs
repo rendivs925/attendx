@@ -192,7 +192,7 @@ fn get_domain(email: &str) -> Option<&str> {
     email.split('@').nth(1)
 }
 
-pub fn validate_email(email: &str, messages: &Messages) -> Result<(), ValidationError> {
+pub fn validate_email(messages: &Messages, email: &str) -> Result<(), ValidationError> {
     let validations = vec![
         has_min_length,
         has_max_length,

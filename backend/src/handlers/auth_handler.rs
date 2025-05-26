@@ -31,6 +31,7 @@ pub async fn register_user_handler(
         name: Some(data.name.clone()),
         email: Some(data.email.clone()),
         password: Some(data.password.clone()),
+        password_confirmation: Some(data.password_confirmation.clone()),
     };
 
     if let Err(errs) = validate_data(&validation_data, &messages) {
