@@ -12,8 +12,6 @@ use shared::{
     },
 };
 
-use anyhow::anyhow;
-use anyhow::{Context, Result};
 use bson::oid::ObjectId;
 use chrono::Utc;
 use shared::utils::locale_utils::Messages;
@@ -30,7 +28,7 @@ pub enum UserServiceError {
 }
 
 impl UserServiceError {
-    fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &Messages) -> String {
         match self {
             UserServiceError::NotFound => {
                 messages.get_user_message("fetch.not_found", "User not found")
@@ -68,48 +66,37 @@ impl UserService {
         &self,
         email: &str,
         password: &str,
-        messages: &Messages,
-    ) -> Result<(User, String)> {
+    ) -> Result<(User, String), UserServiceError> {
         let user = self
             .user_repository
             .find_user("email", email)
             .await
-            .context(UserServiceError::NotFound.to_message(messages))?
-            .ok_or_else(|| anyhow!(UserServiceError::NotFound.to_message(messages)))?;
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?
+            .ok_or(UserServiceError::NotFound)?;
 
-        verify_password(password, &user.password)
-            .map_err(|_| anyhow!(UserServiceError::InvalidCredentials.to_message(messages)))?;
+        if !verify_password(password, &user.password) {
+            return Err(UserServiceError::InvalidCredentials);
+        }
 
-        let token = generate_jwt(&user.name, &user.email).map_err(|e| {
-            anyhow!(UserServiceError::JwtGenerationError(e.to_string()).to_message(messages))
-        })?;
+        let token = generate_jwt(&user.name, &user.email)
+            .map_err(|e| UserServiceError::JwtGenerationError(e.to_string()))?;
 
         Ok((user, token))
     }
 
-    pub async fn register_user(
-        &self,
-        new_user: RegisterRequest,
-        messages: &Messages,
-    ) -> Result<User> {
+    pub async fn register_user(&self, new_user: RegisterRequest) -> Result<User, UserServiceError> {
         let existing_user = self
             .user_repository
             .find_user("email", &new_user.email)
             .await
-            .context(
-                UserServiceError::DbError("Failed to check for duplicate email".into())
-                    .to_message(messages),
-            )?;
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
 
         if existing_user.is_some() {
-            return Err(anyhow!(
-                UserServiceError::DuplicateEmail.to_message(messages)
-            ));
+            return Err(UserServiceError::DuplicateEmail);
         }
 
-        let hashed_password = hash_password(&new_user.password).map_err(|e| {
-            anyhow!(UserServiceError::PasswordHashingError(e.to_string()).to_message(messages))
-        })?;
+        let hashed_password = hash_password(&new_user.password)
+            .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()))?;
 
         let now = Utc::now();
 
@@ -129,41 +116,40 @@ impl UserService {
         self.user_repository
             .register_user(&user)
             .await
-            .map_err(|e| anyhow!(UserServiceError::DbError(e.to_string()).to_message(messages)))?;
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
 
         Ok(user)
     }
 
-    pub async fn get_all_users(&self, messages: &Messages) -> Result<Vec<User>> {
+    pub async fn get_all_users(&self) -> Result<Vec<User>, UserServiceError> {
         self.user_repository
             .get_all_users()
             .await
-            .map_err(|e| anyhow!(UserServiceError::DbError(e.to_string()).to_message(messages)))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))
     }
 
-    pub async fn get_user(&self, email: &str, messages: &Messages) -> Result<Option<User>> {
+    pub async fn get_user(&self, email: &str) -> Result<Option<User>, UserServiceError> {
         self.user_repository
             .find_user("email", email)
             .await
-            .map_err(|e| anyhow!(UserServiceError::DbError(e.to_string()).to_message(messages)))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))
     }
 
     pub async fn update_user(
         &self,
         email: &str,
         user: UpdateUserRequest,
-        messages: &Messages,
-    ) -> Result<UpdateUserRequest> {
+    ) -> Result<UpdateUserRequest, UserServiceError> {
         self.user_repository
             .update_user(email, user)
             .await
-            .map_err(|e| anyhow!(UserServiceError::DbError(e.to_string()).to_message(messages)))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))
     }
 
-    pub async fn delete_user(&self, email: &str, messages: &Messages) -> Result<()> {
+    pub async fn delete_user(&self, email: &str) -> Result<(), UserServiceError> {
         self.user_repository
             .delete_user(email)
             .await
-            .map_err(|e| anyhow!(UserServiceError::DbError(e.to_string()).to_message(messages)))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))
     }
 }

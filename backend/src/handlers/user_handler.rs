@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    services::user_service::UserService,
+    services::user_service::{UserService, UserServiceError},
     utils::{
         http_utils::{handle_internal_error, handle_validation_error},
         locale_utils::get_lang,
@@ -22,12 +22,12 @@ pub async fn get_all_users_handler(
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    match user_service.get_all_users(&messages).await {
+    match user_service.get_all_users().await {
         Ok(users) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("fetch.all_success", "All users fetched successfully."),
             users,
         )),
-        Err(err) => handle_internal_error(err),
+        Err(err) => handle_internal_error(err.to_message(&messages)),
     }
 }
 
@@ -49,7 +49,7 @@ pub async fn get_user_handler(
         return handle_validation_error(errs, &msg);
     }
 
-    match user_service.get_user(&email, &messages).await {
+    match user_service.get_user(&email).await {
         Ok(Some(user)) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("fetch.success", "User fetched successfully."),
             user,
@@ -58,7 +58,7 @@ pub async fn get_user_handler(
             messages.get_user_message("fetch.not_found", &format!("User not found: {}", &email)),
             None,
         )),
-        Err(err) => handle_internal_error(err),
+        Err(err) => handle_internal_error(err.to_message(&messages)),
     }
 }
 
@@ -82,14 +82,18 @@ pub async fn update_user_handler(
     }
 
     match user_service
-        .update_user(&email, updated_user.into_inner(), &messages)
+        .update_user(&email, updated_user.into_inner())
         .await
     {
-        Ok(user) => HttpResponse::Ok().json(ApiResponse::success(
+        Ok(updated) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("update.success", "User updated successfully."),
-            user,
+            updated,
         )),
-        Err(err) => handle_internal_error(err),
+        Err(UserServiceError::NotFound) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
+            messages.get_user_message("update.not_found", "User not found."),
+            None,
+        )),
+        Err(err) => handle_internal_error(err.to_message(&messages)),
     }
 }
 
@@ -111,11 +115,15 @@ pub async fn delete_user_handler(
         return handle_validation_error(errs, &msg);
     }
 
-    match user_service.delete_user(&email, &messages).await {
+    match user_service.delete_user(&email).await {
         Ok(_) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("delete.success", "User deleted successfully."),
             None::<()>,
         )),
-        Err(err) => handle_internal_error(err),
+        Err(UserServiceError::NotFound) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
+            messages.get_user_message("delete.not_found", "User not found."),
+            None,
+        )),
+        Err(err) => handle_internal_error(err.to_message(&messages)),
     }
 }

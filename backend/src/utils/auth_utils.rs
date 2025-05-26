@@ -72,16 +72,16 @@ pub fn hash_password(password: &str) -> Result<String, String> {
         })
 }
 
-pub fn verify_password(password: &str, password_hash: &str) -> Result<bool, String> {
-    let parsed_hash = PasswordHash::new(password_hash).map_err(|e| {
-        error!("❌ Failed to parse password hash: {:?}", e);
-        "Invalid hash format".to_string()
-    })?;
-
-    let argon2 = Argon2::default();
-    Ok(argon2
-        .verify_password(password.as_bytes(), &parsed_hash)
-        .is_ok())
+pub fn verify_password(password: &str, password_hash: &str) -> bool {
+    if let Ok(parsed_hash) = PasswordHash::new(password_hash) {
+        let argon2 = Argon2::default();
+        argon2
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .is_ok()
+    } else {
+        error!("❌ Failed to parse password hash");
+        false
+    }
 }
 
 pub fn validate_phone_number(phone: &str) -> Result<(), ValidationError> {

@@ -1,9 +1,11 @@
-use crate::config::database::get_collection;
+use std::sync::Arc;
+
+use crate::config::database::Database;
 use crate::constants::USER_COL_NAME;
 use bson::Document;
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, to_document};
-use mongodb::{Client, Collection, error::Result};
+use mongodb::{Collection, error::Result};
 use shared::models::user_model::User;
 use shared::types::requests::user::update_user_request::UpdateUserRequest;
 
@@ -12,8 +14,8 @@ pub struct UserRepository {
 }
 
 impl UserRepository {
-    pub async fn new(client: &Client) -> Result<Self> {
-        let collection = get_collection(client, (*USER_COL_NAME).as_str()).await?;
+    pub async fn new(db: Arc<Database>) -> Result<Self> {
+        let collection = db.collection(&USER_COL_NAME);
         Ok(Self { collection })
     }
 

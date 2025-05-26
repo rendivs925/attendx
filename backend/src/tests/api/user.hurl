@@ -3,12 +3,12 @@ Content-Type: application/json
 Accept-Language: en
 
 {
-  "email": "h1@gmail.com",
-  "password": "Securepassword123."
+  "email": "tono@gmail.com",
+  "password": "Securepjjjassword123."
 }
 
 DELETE http://localhost:8000/auth/logout
-Accept-Language: en
+Accept-Language: ja
 
 POST http://localhost:8000/auth/register
 Content-Type: application/json

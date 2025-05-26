@@ -2,11 +2,11 @@ use crate::components::auth::{
     auth_form_container::AuthFormContainer, auth_redirect_text::AuthRedirectText,
     google_auth_button::GoogleAuthButton, input_field::InputField,
 };
-use crate::hooks::use_login_form::{use_login_form, LoginFormState};
+use crate::hooks::use_login_form::{LoginFormState, use_login_form};
+use leptos::IntoView;
 use leptos::component;
 use leptos::prelude::*;
 use leptos::view;
-use leptos::IntoView;
 
 #[component]
 pub fn Login() -> impl IntoView {
@@ -26,7 +26,9 @@ pub fn Login() -> impl IntoView {
                     id="email"
                     label="Email"
                     input_type="email"
-                    placeholder="you@example.com"
+                    placeholder="e.g. john.doe@example.com"
+                    autocomplete="email"
+                    required=true
                     node_ref=email
                     errors=error
                 />
@@ -34,13 +36,15 @@ pub fn Login() -> impl IntoView {
                     id="password"
                     label="Password"
                     input_type="password"
-                    placeholder="••••••••"
+                    placeholder="At least 8 characters"
+                    autocomplete="current-password"
+                    required=true
                     node_ref=password
                     errors=error
                 />
                 <div class="form-control pt-2">
                     <button type="submit" class="btn btn-primary w-full text-base font-semibold">
-                        "Login"
+                        Login
                     </button>
                 </div>
             </form>

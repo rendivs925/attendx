@@ -6,6 +6,7 @@ use pages::register::Register;
 use store::auth::state::AuthStore;
 
 mod components;
+mod constants;
 mod hooks;
 mod pages;
 mod store;

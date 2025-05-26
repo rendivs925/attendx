@@ -14,11 +14,8 @@ use std::sync::Arc;
 use crate::utils::locale_utils::get_lang;
 use crate::{
     constants::COOKIE_NAME,
-    services::user_service::UserService,
-    utils::{
-        auth_utils::generate_cookie,
-        http_utils::{handle_internal_error, handle_validation_error},
-    },
+    services::user_service::{UserService, UserServiceError},
+    utils::{auth_utils::generate_cookie, http_utils::handle_validation_error},
 };
 
 pub async fn register_user_handler(
@@ -42,12 +39,19 @@ pub async fn register_user_handler(
         return handle_validation_error(errs, &err_msg);
     }
 
-    match user_service.register_user(data, &messages).await {
-        Ok(user) => HttpResponse::Created().json(ApiResponse::success(
-            messages.get_auth_message("register.success", "User successfully created."),
-            user,
-        )),
-        Err(err) => handle_internal_error(err),
+    match user_service.register_user(data).await {
+        Ok(user) => {
+            let user_response = UserResponse::from(user);
+            HttpResponse::Created().json(ApiResponse::success(
+                messages.get_auth_message("register.success", "User successfully created."),
+                user_response,
+            ))
+        }
+        Err(UserServiceError::DuplicateEmail) => HttpResponse::Conflict().json(
+            ApiResponse::<()>::error(UserServiceError::DuplicateEmail.to_message(&messages), None),
+        ),
+        Err(e) => HttpResponse::InternalServerError()
+            .json(ApiResponse::<()>::error(e.to_message(&messages), None)),
     }
 }
 
@@ -67,7 +71,7 @@ pub async fn jwt_login_handler(
     }
 
     match user_service
-        .authenticate_user(&data.email, &data.password, &messages)
+        .authenticate_user(&data.email, &data.password)
         .await
     {
         Ok((user, token)) => {
@@ -80,9 +84,14 @@ pub async fn jwt_login_handler(
                 user_response,
             ))
         }
-        Err(err) => {
-            HttpResponse::Unauthorized().json(ApiResponse::<()>::error(err.to_string(), None))
+        Err(UserServiceError::InvalidCredentials | UserServiceError::NotFound) => {
+            HttpResponse::Unauthorized().json(ApiResponse::<()>::error(
+                UserServiceError::InvalidCredentials.to_message(&messages),
+                None,
+            ))
         }
+        Err(e) => HttpResponse::InternalServerError()
+            .json(ApiResponse::<()>::error(e.to_message(&messages), None)),
     }
 }
 

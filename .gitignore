@@ -12,6 +12,7 @@ Secrets*.toml
 # === Environment Files ===
 .env
 .env.*
+**/*.env
 
 # === Node (for Tailwind, Vite, etc.) ===
 **/node_modules

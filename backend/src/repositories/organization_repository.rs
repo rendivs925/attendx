@@ -1,8 +1,10 @@
-use crate::config::database::get_collection;
+use std::sync::Arc;
+
+use crate::config::database::Database;
 use crate::constants::ORGANIZATIONS_COL_NAME;
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, oid::ObjectId, to_document};
-use mongodb::{Client, Collection, error::Result};
+use mongodb::{Collection, error::Result};
 use shared::models::organization_model::Organization;
 
 pub struct OrganizationRepository {
@@ -10,8 +12,8 @@ pub struct OrganizationRepository {
 }
 
 impl OrganizationRepository {
-    pub async fn new(client: &Client) -> Result<Self> {
-        let collection = get_collection(client, (*ORGANIZATIONS_COL_NAME).as_str()).await?;
+    pub async fn new(db: Arc<Database>) -> Result<Self> {
+        let collection = db.collection::<Organization>(&ORGANIZATIONS_COL_NAME);
         Ok(Self { collection })
     }
 

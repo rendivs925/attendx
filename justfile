@@ -5,7 +5,7 @@ build:
     cargo build --workspace
 
 sb:
-    cd backend && cargo shuttle run
+    cd backend && cargo watch -x "shuttle run"
 
 cb:
     cd backend && cargo check
@@ -18,3 +18,4 @@ cf:
 
 sa:
     just sb & just sf
+

@@ -1,8 +1,10 @@
-use crate::config::database::get_collection;
+use std::sync::Arc;
+
+use crate::config::database::Database;
 use crate::constants::USER_COL_NAME;
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, oid::ObjectId, to_document};
-use mongodb::{Client, Collection, error::Result};
+use mongodb::{Collection, error::Result};
 use shared::models::user_model::User;
 
 pub struct OrganizationMemberRepository {
@@ -10,8 +12,8 @@ pub struct OrganizationMemberRepository {
 }
 
 impl OrganizationMemberRepository {
-    pub async fn new(client: &Client) -> Result<Self> {
-        let collection = get_collection(client, &USER_COL_NAME).await?;
+    pub async fn new(db: Arc<Database>) -> Result<Self> {
+        let collection = db.collection(&USER_COL_NAME);
         Ok(Self { collection })
     }
 

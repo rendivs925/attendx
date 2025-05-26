@@ -26,7 +26,9 @@ pub fn Register() -> impl IntoView {
                     id="name"
                     label="Name"
                     input_type="text"
-                    placeholder="Your full name"
+                    placeholder="e.g. John Doe"
+                    autocomplete="name"
+                    required=true
                     node_ref=name
                     errors=error
                 />
@@ -34,7 +36,9 @@ pub fn Register() -> impl IntoView {
                     id="email"
                     label="Email"
                     input_type="email"
-                    placeholder="you@example.com"
+                    placeholder="e.g. john.doe@example.com"
+                    autocomplete="email"
+                    required=true
                     node_ref=email
                     errors=error
                 />
@@ -42,13 +46,15 @@ pub fn Register() -> impl IntoView {
                     id="password"
                     label="Password"
                     input_type="password"
-                    placeholder="••••••••"
+                    placeholder="At least 8 characters"
+                    autocomplete="new-password"
+                    required=true
                     node_ref=password
                     errors=error
                 />
                 <div class="form-control pt-2">
                     <button type="submit" class="btn btn-primary w-full text-base font-semibold">
-                        "Register"
+                        Register
                     </button>
                 </div>
             </form>

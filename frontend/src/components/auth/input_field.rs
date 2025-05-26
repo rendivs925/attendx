@@ -11,6 +11,10 @@ pub fn InputField(
     placeholder: &'static str,
     node_ref: NodeRef<Input>,
     errors: RwSignal<Option<ValidationErrors>>,
+
+    #[prop(optional)] autocomplete: Option<&'static str>,
+    #[prop(optional)] required: Option<bool>,
+    #[prop(optional)] disabled: Option<bool>,
 ) -> impl IntoView {
     view! {
         <div class="form-control w-full space-y-2">
@@ -23,6 +27,9 @@ pub fn InputField(
                 placeholder=placeholder
                 class="input input-bordered w-full"
                 node_ref=node_ref
+                autocomplete=autocomplete.unwrap_or("")
+                required=required.unwrap_or(false)
+                disabled=disabled.unwrap_or(false)
             />
             <ErrorMessages errors=errors field=id />
         </div>
