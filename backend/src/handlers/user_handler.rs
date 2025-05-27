@@ -24,7 +24,7 @@ pub async fn get_all_users_handler(
 
     match user_service.get_all_users().await {
         Ok(users) => HttpResponse::Ok().json(ApiResponse::success(
-            messages.get_user_message("fetch.all_success", "All users fetched successfully."),
+            messages.get_user_message("fetch.all_success"),
             users,
         )),
         Err(err) => handle_internal_error(err.to_message(&messages)),
@@ -45,17 +45,17 @@ pub async fn get_user_handler(
     };
 
     if let Err(errs) = validate_data(&validation_input, &messages) {
-        let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
+        let msg = messages.get_auth_message("email.invalid");
         return handle_validation_error(errs, &msg);
     }
 
     match user_service.get_user(&email).await {
         Ok(Some(user)) => HttpResponse::Ok().json(ApiResponse::success(
-            messages.get_user_message("fetch.success", "User fetched successfully."),
+            messages.get_user_message("fetch.success"),
             user,
         )),
         Ok(None) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
-            messages.get_user_message("fetch.not_found", &format!("User not found: {}", &email)),
+            messages.get_user_message("fetch.not_found"),
             None,
         )),
         Err(err) => handle_internal_error(err.to_message(&messages)),
@@ -77,7 +77,7 @@ pub async fn update_user_handler(
     };
 
     if let Err(errs) = validate_data(&validation_input, &messages) {
-        let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
+        let msg = messages.get_auth_message("email.invalid");
         return handle_validation_error(errs, &msg);
     }
 
@@ -86,11 +86,11 @@ pub async fn update_user_handler(
         .await
     {
         Ok(updated) => HttpResponse::Ok().json(ApiResponse::success(
-            messages.get_user_message("update.success", "User updated successfully."),
+            messages.get_user_message("update.success"),
             updated,
         )),
         Err(UserServiceError::NotFound) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
-            messages.get_user_message("update.not_found", "User not found."),
+            messages.get_user_message("update.not_found"),
             None,
         )),
         Err(err) => handle_internal_error(err.to_message(&messages)),
@@ -111,17 +111,17 @@ pub async fn delete_user_handler(
     };
 
     if let Err(errs) = validate_data(&validation_input, &messages) {
-        let msg = messages.get_auth_message("email.invalid", "Invalid email format.");
+        let msg = messages.get_auth_message("email.invalid");
         return handle_validation_error(errs, &msg);
     }
 
     match user_service.delete_user(&email).await {
         Ok(_) => HttpResponse::Ok().json(ApiResponse::success(
-            messages.get_user_message("delete.success", "User deleted successfully."),
+            messages.get_user_message("delete.success"),
             None::<()>,
         )),
         Err(UserServiceError::NotFound) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
-            messages.get_user_message("delete.not_found", "User not found."),
+            messages.get_user_message("delete.not_found"),
             None,
         )),
         Err(err) => handle_internal_error(err.to_message(&messages)),

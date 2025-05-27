@@ -13,4 +13,5 @@ email_address = "0.2.9"
 strum = { version = "0.26", features = ["derive"] }
 strum_macros = "0.26"
 bson = "2.15.0"
+log = "0.4.27"
 

@@ -30,24 +30,17 @@ pub enum UserServiceError {
 impl UserServiceError {
     pub fn to_message(&self, messages: &Messages) -> String {
         match self {
-            UserServiceError::NotFound => {
-                messages.get_user_message("fetch.not_found", "User not found")
-            }
+            UserServiceError::NotFound => messages.get_user_message("fetch.not_found"),
             UserServiceError::InvalidCredentials => {
-                messages.get_auth_message("login.invalid_credentials", "Invalid credentials")
+                messages.get_auth_message("login.invalid_credentials")
             }
-            UserServiceError::DuplicateEmail => {
-                messages.get_auth_message("register.duplicate", "Duplicate email")
-            }
-            UserServiceError::DbError(_) => messages.get_auth_message(
-                "register.db_error",
-                "Database error occurred during user registration",
-            ),
+            UserServiceError::DuplicateEmail => messages.get_auth_message("register.duplicate"),
+            UserServiceError::DbError(_) => messages.get_auth_message("register.db_error"),
             UserServiceError::JwtGenerationError(_) => {
-                messages.get_auth_message("auth.jwt_generation_failed", "JWT generation failed")
+                messages.get_auth_message("auth.jwt_generation_failed")
             }
             UserServiceError::PasswordHashingError(_) => {
-                messages.get_auth_message("auth.password_hashing_failed", "Password hashing failed")
+                messages.get_auth_message("auth.password_hashing_failed")
             }
         }
     }
@@ -89,14 +82,14 @@ impl UserService {
             .user_repository
             .find_user("email", &new_user.email)
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
+            .map_err(|e| UserServiceError::DbError(e.to_string()));
 
-        if existing_user.is_some() {
+        if existing_user?.is_some() {
             return Err(UserServiceError::DuplicateEmail);
         }
 
         let hashed_password = hash_password(&new_user.password)
-            .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()))?;
+            .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()));
 
         let now = Utc::now();
 
@@ -104,7 +97,7 @@ impl UserService {
             _id: Some(ObjectId::new()),
             name: new_user.name,
             email: new_user.email.clone(),
-            password: hashed_password,
+            password: hashed_password?,
             organization_ids: HashSet::new(),
             owned_organizations: 0,
             subscription_plan: new_user.subscription_plan,
@@ -113,10 +106,11 @@ impl UserService {
             updated_at: now,
         };
 
-        self.user_repository
+        let _ = self
+            .user_repository
             .register_user(&user)
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
+            .map_err(|e| UserServiceError::DbError(e.to_string()));
 
         Ok(user)
     }

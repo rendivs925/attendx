@@ -35,8 +35,7 @@ pub async fn register_user_handler(
     };
 
     if let Err(errs) = validate_data(&validation_data, &messages) {
-        let err_msg =
-            messages.get_auth_message("register.invalid_data", "Invalid registration data");
+        let err_msg = messages.get_auth_message("register.invalid_data");
         return handle_validation_error(errs, &err_msg);
     }
 
@@ -44,7 +43,7 @@ pub async fn register_user_handler(
         Ok(user) => {
             let user_response = UserResponse::from(user);
             HttpResponse::Created().json(ApiResponse::success(
-                messages.get_auth_message("register.success", "User successfully created."),
+                messages.get_auth_message("register.success"),
                 user_response,
             ))
         }
@@ -66,8 +65,7 @@ pub async fn jwt_login_handler(
     let data = credentials.into_inner();
 
     if let Err(errs) = validate_login(&data.email, &data.password, &messages) {
-        let err_msg =
-            messages.get_auth_message("login.invalid_credentials", "Invalid login credentials");
+        let err_msg = messages.get_auth_message("login.invalid_credentials");
         return handle_validation_error(errs, &err_msg);
     }
 
@@ -81,7 +79,7 @@ pub async fn jwt_login_handler(
             let user_response = UserResponse::from(user);
 
             HttpResponse::Ok().cookie(cookie).json(ApiResponse::success(
-                messages.get_auth_message("login.success", "Login successful"),
+                messages.get_auth_message("login.success"),
                 user_response,
             ))
         }
@@ -113,7 +111,7 @@ pub async fn logout_user_handler(req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok()
         .cookie(expired)
         .json(ApiResponse::success(
-            messages.get_auth_message("logout.success", "Logged out successfully."),
+            messages.get_auth_message("logout.success"),
             None::<()>,
         ))
 }

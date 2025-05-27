@@ -3744,6 +3744,7 @@ dependencies = [
  "bson",
  "chrono",
  "email_address",
+ "log",
  "rayon",
  "serde",
  "serde_json",

@@ -12,13 +12,7 @@ const MAX_PASSWORD_LENGTH: usize = 128;
 fn has_min_length(password: &str, messages: &Messages) -> Result<(), String> {
     let length = password.len();
     if length < MIN_PASSWORD_LENGTH {
-        return Err(messages.get_validation_message(
-            "password.too_short",
-            &format!(
-                "Password must be at least {} characters long",
-                MIN_PASSWORD_LENGTH
-            ),
-        ));
+        return Err(messages.get_validation_message("password.too_short"));
     }
     Ok(())
 }
@@ -26,63 +20,42 @@ fn has_min_length(password: &str, messages: &Messages) -> Result<(), String> {
 fn has_max_length(password: &str, messages: &Messages) -> Result<(), String> {
     let length = password.len();
     if length > MAX_PASSWORD_LENGTH {
-        return Err(messages.get_validation_message(
-            "password.too_long",
-            &format!(
-                "Password must be no more than {} characters long",
-                MAX_PASSWORD_LENGTH
-            ),
-        ));
+        return Err(messages.get_validation_message("password.too_long"));
     }
     Ok(())
 }
 
 fn has_no_space(password: &str, messages: &Messages) -> Result<(), String> {
     if password.contains(' ') {
-        return Err(messages.get_validation_message(
-            "password.contains_space",
-            "Password must not contain spaces",
-        ));
+        return Err(messages.get_validation_message("password.contains_space"));
     }
     Ok(())
 }
 
 fn has_uppercase(password: &str, messages: &Messages) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_uppercase()) {
-        return Err(messages.get_validation_message(
-            "password.missing_uppercase",
-            "Password must contain at least one uppercase letter",
-        ));
+        return Err(messages.get_validation_message("password.missing_uppercase"));
     }
     Ok(())
 }
 
 fn has_lowercase(password: &str, messages: &Messages) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_lowercase()) {
-        return Err(messages.get_validation_message(
-            "password.missing_lowercase",
-            "Password must contain at least one lowercase letter",
-        ));
+        return Err(messages.get_validation_message("password.missing_lowercase"));
     }
     Ok(())
 }
 
 fn has_digit(password: &str, messages: &Messages) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_digit()) {
-        return Err(messages.get_validation_message(
-            "password.missing_digit",
-            "Password must contain at least one digit",
-        ));
+        return Err(messages.get_validation_message("password.missing_digit"));
     }
     Ok(())
 }
 
 fn has_special_char(password: &str, messages: &Messages) -> Result<(), String> {
     if !password.chars().any(|char| !char.is_alphanumeric()) {
-        return Err(messages.get_validation_message(
-            "password.missing_special_char",
-            "Password must contain at least one special character",
-        ));
+        return Err(messages.get_validation_message("password.missing_special_char"));
     }
     Ok(())
 }
