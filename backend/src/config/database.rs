@@ -1,4 +1,5 @@
 use crate::constants::{DB_NAME, MONGODB_URI, USER_COL_NAME};
+use log::info;
 use mongodb::{
     Client, Collection, IndexModel,
     bson::doc,
@@ -16,7 +17,7 @@ impl Database {
         let client_uri = (*MONGODB_URI).as_str();
         let client_options = ClientOptions::parse(client_uri).await?;
         let client = Client::with_options(client_options)?;
-        println!("✅ Connected to MongoDB");
+        info!("Connected to MongoDB");
 
         let db = Self { client };
         db.create_unique_indexes().await?;

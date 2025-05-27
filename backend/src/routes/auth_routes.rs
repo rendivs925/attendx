@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::{
     config::cors::configure_cors,
-    handlers::auth_handler::{jwt_login_handler, logout_user_handler, register_user_handler},
+    handlers::auth::auth_handler::{jwt_login_handler, logout_user_handler, register_user_handler},
     services::user_service::UserService,
 };
 

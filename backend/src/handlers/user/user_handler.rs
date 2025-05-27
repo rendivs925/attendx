@@ -25,7 +25,7 @@ pub async fn get_all_users_handler(
     match user_service.get_all_users().await {
         Ok(users) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("fetch.all_success"),
-            users,
+            Some(users),
         )),
         Err(err) => handle_internal_error(err.to_message(&messages)),
     }
@@ -52,7 +52,7 @@ pub async fn get_user_handler(
     match user_service.get_user(&email).await {
         Ok(Some(user)) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("fetch.success"),
-            user,
+            Some(user),
         )),
         Ok(None) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
             messages.get_user_message("fetch.not_found"),
@@ -87,7 +87,7 @@ pub async fn update_user_handler(
     {
         Ok(updated) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_user_message("update.success"),
-            updated,
+            Some(updated),
         )),
         Err(UserServiceError::NotFound) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
             messages.get_user_message("update.not_found"),

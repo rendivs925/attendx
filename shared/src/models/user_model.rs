@@ -1,5 +1,6 @@
 use crate::types::models::user::{
-    defaults::{default_status, default_subscription_plan},
+    defaults::{default_global_role, default_status, default_subscription_plan},
+    global_role::GlobalRole,
     subscription::SubscriptionPlan,
     user_status::UserStatus,
 };
@@ -29,6 +30,9 @@ pub struct User {
 
     #[serde(default = "default_status")]
     pub status: UserStatus,
+
+    #[serde(default = "default_global_role")]
+    pub global_role: GlobalRole,
 
     #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,

@@ -44,7 +44,7 @@ pub async fn register_user_handler(
             let user_response = UserResponse::from(user);
             HttpResponse::Created().json(ApiResponse::success(
                 messages.get_auth_message("register.success"),
-                user_response,
+                Some(user_response),
             ))
         }
         Err(UserServiceError::DuplicateEmail) => HttpResponse::Conflict().json(
@@ -80,7 +80,7 @@ pub async fn jwt_login_handler(
 
             HttpResponse::Ok().cookie(cookie).json(ApiResponse::success(
                 messages.get_auth_message("login.success"),
-                user_response,
+                Some(user_response),
             ))
         }
         Err(UserServiceError::InvalidCredentials | UserServiceError::NotFound) => {
@@ -110,8 +110,8 @@ pub async fn logout_user_handler(req: HttpRequest) -> HttpResponse {
 
     HttpResponse::Ok()
         .cookie(expired)
-        .json(ApiResponse::success(
+        .json(ApiResponse::<()>::success(
             messages.get_auth_message("logout.success"),
-            None::<()>,
+            None,
         ))
 }

@@ -16,14 +16,14 @@ Accept-Language: en
 
 {
   "name": "user",
-  "email": "h1@gmail.com",
+  "email": "yuni@gmail.com",
   "password": "Securepassword123.",
-  "password_confirmation": "Surepassword123.",
+  "password_confirmation": "Securepassword123.",
   "subscription_plan": "Free"
 }
 
 GET http://localhost:8000/users/all
-Accept-Language: de
+Accept-Language: en
 
 GET http://localhost:8000/users/h1@gmail.com
 Accept-Language: id

@@ -1,7 +1,9 @@
-use crate::handlers::user_handler::{
-    delete_user_handler, get_all_users_handler, get_user_handler, update_user_handler,
+use crate::{
+    handlers::user::user_handler::{
+        delete_user_handler, get_all_users_handler, get_user_handler, update_user_handler,
+    },
+    services::user_service::UserService,
 };
-use crate::services::user_service::UserService;
 use actix_web::web;
 use std::sync::Arc;
 

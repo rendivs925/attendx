@@ -12,9 +12,9 @@ pub fn validate_password_confirmation(
     let Some(confirm) = password_confirmation else {
         let error_message = messages.get_validation_message("password_confirmation.required");
         return Err(add_error(
-            "password_confirmation.missing",
+            "password_confirmation.required",
             error_message,
-            confirm,
+            "",
         ));
     };
 

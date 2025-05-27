@@ -17,11 +17,11 @@ pub struct ApiResponse<T> {
 }
 
 impl<T> ApiResponse<T> {
-    pub fn success(message: impl Into<String>, data: T) -> Self {
+    pub fn success(message: impl Into<String>, data: Option<T>) -> Self {
         ApiResponse {
             message: message.into(),
             error: None,
-            data: Some(data),
+            data,
         }
     }
 

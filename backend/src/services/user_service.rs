@@ -5,10 +5,11 @@ use crate::{
 use shared::{
     models::user_model::User,
     types::{
-        models::user::defaults::default_status,
+        models::user::defaults::{default_global_role, default_status},
         requests::{
             auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
         },
+        responses::user_response::UserResponse,
     },
 };
 
@@ -59,7 +60,7 @@ impl UserService {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(User, String), UserServiceError> {
+    ) -> Result<(UserResponse, String), UserServiceError> {
         let user = self
             .user_repository
             .find_user("email", email)
@@ -74,22 +75,25 @@ impl UserService {
         let token = generate_jwt(&user.name, &user.email)
             .map_err(|e| UserServiceError::JwtGenerationError(e.to_string()))?;
 
-        Ok((user, token))
+        Ok((UserResponse::from(user), token))
     }
 
-    pub async fn register_user(&self, new_user: RegisterRequest) -> Result<User, UserServiceError> {
+    pub async fn register_user(
+        &self,
+        new_user: RegisterRequest,
+    ) -> Result<UserResponse, UserServiceError> {
         let existing_user = self
             .user_repository
             .find_user("email", &new_user.email)
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()));
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
 
-        if existing_user?.is_some() {
+        if existing_user.is_some() {
             return Err(UserServiceError::DuplicateEmail);
         }
 
         let hashed_password = hash_password(&new_user.password)
-            .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()));
+            .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()))?;
 
         let now = Utc::now();
 
@@ -97,36 +101,42 @@ impl UserService {
             _id: Some(ObjectId::new()),
             name: new_user.name,
             email: new_user.email.clone(),
-            password: hashed_password?,
+            password: hashed_password,
             organization_ids: HashSet::new(),
             owned_organizations: 0,
             subscription_plan: new_user.subscription_plan,
             status: default_status(),
+            global_role: default_global_role(),
             created_at: now,
             updated_at: now,
         };
 
-        let _ = self
-            .user_repository
+        self.user_repository
             .register_user(&user)
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()));
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
 
-        Ok(user)
+        Ok(UserResponse::from(user))
     }
 
-    pub async fn get_all_users(&self) -> Result<Vec<User>, UserServiceError> {
-        self.user_repository
+    pub async fn get_all_users(&self) -> Result<Vec<UserResponse>, UserServiceError> {
+        let users = self
+            .user_repository
             .get_all_users()
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
+
+        Ok(users.into_iter().map(UserResponse::from).collect())
     }
 
-    pub async fn get_user(&self, email: &str) -> Result<Option<User>, UserServiceError> {
-        self.user_repository
+    pub async fn get_user(&self, email: &str) -> Result<Option<UserResponse>, UserServiceError> {
+        let user = self
+            .user_repository
             .find_user("email", email)
             .await
-            .map_err(|e| UserServiceError::DbError(e.to_string()))
+            .map_err(|e| UserServiceError::DbError(e.to_string()))?;
+
+        Ok(user.map(UserResponse::from))
     }
 
     pub async fn update_user(
