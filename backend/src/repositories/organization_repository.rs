@@ -2,8 +2,9 @@ use std::sync::Arc;
 
 use crate::config::database::Database;
 use crate::constants::ORGANIZATIONS_COL_NAME;
+use bson::Document;
 use futures_util::stream::TryStreamExt;
-use mongodb::bson::{doc, oid::ObjectId, to_document};
+use mongodb::bson::{doc, to_document};
 use mongodb::{Collection, error::Result};
 use shared::models::organization_model::Organization;
 
@@ -17,18 +18,23 @@ impl OrganizationRepository {
         Ok(Self { collection })
     }
 
-    pub async fn create_organization(
-        &self,
-        mut organization: Organization,
-    ) -> Result<Organization> {
-        let insert_result = self.collection.insert_one(&organization).await?;
-        organization._id = Some(insert_result.inserted_id.as_object_id().unwrap());
+    pub async fn create_organization(&self, organization: Organization) -> Result<Organization> {
+        self.collection.insert_one(&organization).await?;
         Ok(organization)
     }
 
     pub async fn find_organization_by_id(&self, org_id: &str) -> Result<Option<Organization>> {
-        let object_id = ObjectId::parse_str(org_id).unwrap();
-        self.collection.find_one(doc! { "_id": object_id }).await
+        self.collection.find_one(doc! { "_id": org_id }).await
+    }
+
+    pub async fn find_organization(
+        &self,
+        field: &str,
+        value: &str,
+    ) -> Result<Option<Organization>> {
+        let mut filter = Document::new();
+        filter.insert(field, value);
+        self.collection.find_one(filter).await
     }
 
     pub async fn get_all_organizations(&self) -> Result<Vec<Organization>> {
@@ -42,21 +48,17 @@ impl OrganizationRepository {
         org_id: &str,
         organization: &Organization,
     ) -> Result<Organization> {
-        let object_id = ObjectId::parse_str(org_id).unwrap();
         let update_doc = to_document(organization)?;
 
         self.collection
-            .update_one(doc! { "_id": object_id }, doc! { "$set": update_doc })
+            .update_one(doc! { "_id": org_id }, doc! { "$set": update_doc })
             .await?;
 
         Ok(organization.clone())
     }
 
     pub async fn delete_organization(&self, org_id: &str) -> Result<()> {
-        let object_id = ObjectId::parse_str(org_id).unwrap();
-        self.collection
-            .delete_one(doc! { "_id": object_id })
-            .await?;
+        self.collection.delete_one(doc! { "_id": org_id }).await?;
         Ok(())
     }
 }

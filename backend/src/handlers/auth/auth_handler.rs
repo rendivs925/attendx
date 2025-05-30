@@ -41,13 +41,10 @@ pub async fn register_user_handler(
     }
 
     match user_service.register_user(data).await {
-        Ok(user) => {
-            let user_response = UserResponse::from(user);
-            HttpResponse::Created().json(ApiResponse::success(
-                messages.get_message(Namespace::Auth, "register.success"),
-                Some(user_response),
-            ))
-        }
+        Ok(user) => HttpResponse::Created().json(ApiResponse::success(
+            messages.get_message(Namespace::Auth, "register.success"),
+            Some(user),
+        )),
         Err(UserServiceError::DuplicateEmail) => HttpResponse::Conflict().json(
             ApiResponse::<()>::error(UserServiceError::DuplicateEmail.to_message(&messages), None),
         ),

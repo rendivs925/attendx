@@ -5,7 +5,7 @@ build:
     cargo build --workspace
 
 sb:
-    cd backend && cargo watch -x "shuttle run"
+    cd backend && cargo watch --ignore "src/tests/" -x "shuttle run"
 
 cb:
     cd backend && cargo check

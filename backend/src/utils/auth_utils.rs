@@ -7,7 +7,7 @@ use argon2::{
 };
 use chrono::{Duration as ChronoDuration, Utc};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use log::{error, info};
+use log::error;
 use phonenumber::{country, parse};
 use rand::rngs::OsRng;
 use shared::types::auth::claims::Claims;
@@ -33,15 +33,13 @@ pub fn generate_jwt(name: &str, email: &str) -> Result<String, String> {
         exp: expiration.timestamp() as usize,
     };
 
-    info!("✅ Claims created successfully");
-
     encode(
         &Header::new(Algorithm::HS256),
         &claims,
         &EncodingKey::from_secret(secret_key),
     )
     .map_err(|e| {
-        error!("❌ Error generating JWT: {:?}", e);
+        error!("Error generating JWT: {:?}", e);
         format!("JWT generation failed: {}", e)
     })
 }

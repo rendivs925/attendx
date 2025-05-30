@@ -17,6 +17,7 @@ pub struct UserResponse {
     pub status: UserStatus,
     pub global_role: GlobalRole,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl From<User> for UserResponse {
@@ -29,6 +30,7 @@ impl From<User> for UserResponse {
             status: user.status,
             global_role: user.global_role,
             created_at: user.created_at,
+            updated_at: user.updated_at,
         }
     }
 }

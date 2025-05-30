@@ -4,8 +4,8 @@ Content-Type: application/json
 Accept-Language: en
 
 {
-  "name": "User A",
-  "email": "usera@gmail.com",
+  "name": "User D",
+  "email": "userd@gmail.com",
   "password": "Securepassword123.",
   "password_confirmation": "Securepassword123.",
   "subscription_plan": "Free"
@@ -30,6 +30,7 @@ Cookie: jwt_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiVXNlciBBIiwiZ
 {
   "owner_id": "6835cd531698f3c7ad384dc8",
   "name": "Org Free Plan",
+  "logo_url": "jsjsjsjsjsjsj",
   "email": "orgfree@example.com",
   "password": "OrgPass123."
 }
@@ -66,6 +67,7 @@ Cookie: jwt_token=<your_token_here>
 {
   "name": "Org Pro Plan",
   "email": "orgpro@example.com",
+  "logo_url": "jsjsjsj",
   "password": "OrgPass123."
 }
 

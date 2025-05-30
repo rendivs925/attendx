@@ -8,6 +8,7 @@ use std::collections::HashSet;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub _id: Option<ObjectId>,
     pub name: String,
     pub email: String,
@@ -26,7 +27,7 @@ impl Default for User {
         let now = Utc::now();
 
         Self {
-            _id: None,
+            _id: Some(ObjectId::new()),
             name: String::default(),
             email: String::default(),
             password: String::default(),

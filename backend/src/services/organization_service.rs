@@ -1,9 +1,13 @@
 use crate::{
     repositories::organization_repository::OrganizationRepository, utils::auth_utils::hash_password,
 };
+use log::error;
 use shared::{
     models::organization_model::Organization,
-    types::requests::organization::register_organization_request::RegisterOrganizationRequest,
+    types::{
+        requests::organization::register_organization_request::RegisterOrganizationRequest,
+        responses::organization_response::OrganizationResponse,
+    },
     utils::locale_utils::{Messages, Namespace},
 };
 use std::sync::Arc;
@@ -57,53 +61,85 @@ impl OrganizationService {
     pub async fn create_organization(
         &self,
         new_organization: RegisterOrganizationRequest,
-    ) -> Result<Organization, OrganizationServiceError> {
-        let hashed_password = hash_password(&new_organization.password)
-            .map_err(|e| OrganizationServiceError::PasswordHashingError(e.to_string()))?;
+    ) -> Result<OrganizationResponse, OrganizationServiceError> {
+        let existing_org = self
+            .organization_repository
+            .find_organization("email", &new_organization.email)
+            .await
+            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))?;
+
+        if existing_org.is_some() {
+            return Err(OrganizationServiceError::DuplicateEmail);
+        }
+
+        let hashed_password = hash_password(&new_organization.password).map_err(|e| {
+            error!(
+                "Failed to hash password for organization {}: {:?}",
+                new_organization.email, e
+            );
+            OrganizationServiceError::PasswordHashingError(e.to_string())
+        })?;
 
         let organization = Organization {
             name: new_organization.name,
             email: new_organization.email.clone(),
             password: hashed_password,
             logo_url: new_organization.logo_url,
-
             ..Default::default()
         };
 
-        self.organization_repository
+        let created = self
+            .organization_repository
             .create_organization(organization)
             .await
-            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))
+            .map_err(|e| {
+                error!(
+                    "Database error when creating organization {}: {:?}",
+                    new_organization.email, e
+                );
+                OrganizationServiceError::DbError(e.to_string())
+            })?;
+
+        Ok(OrganizationResponse::from(created))
     }
 
     pub async fn get_organization_by_id(
         &self,
         org_id: &str,
-    ) -> Result<Option<Organization>, OrganizationServiceError> {
-        self.organization_repository
+    ) -> Result<Option<OrganizationResponse>, OrganizationServiceError> {
+        let org = self
+            .organization_repository
             .find_organization_by_id(org_id)
             .await
-            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))
+            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))?;
+
+        Ok(org.map(OrganizationResponse::from))
     }
 
     pub async fn get_all_organizations(
         &self,
-    ) -> Result<Vec<Organization>, OrganizationServiceError> {
-        self.organization_repository
+    ) -> Result<Vec<OrganizationResponse>, OrganizationServiceError> {
+        let orgs = self
+            .organization_repository
             .get_all_organizations()
             .await
-            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))
+            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))?;
+
+        Ok(orgs.into_iter().map(OrganizationResponse::from).collect())
     }
 
     pub async fn update_organization(
         &self,
         org_id: &str,
         organization: Organization,
-    ) -> Result<Organization, OrganizationServiceError> {
-        self.organization_repository
+    ) -> Result<OrganizationResponse, OrganizationServiceError> {
+        let updated = self
+            .organization_repository
             .update_organization(org_id, &organization)
             .await
-            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))
+            .map_err(|e| OrganizationServiceError::DbError(e.to_string()))?;
+
+        Ok(OrganizationResponse::from(updated))
     }
 
     pub async fn delete_organization(&self, org_id: &str) -> Result<(), OrganizationServiceError> {
