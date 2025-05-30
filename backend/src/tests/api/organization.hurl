@@ -7,8 +7,7 @@ Accept-Language: en
   "name": "User D",
   "email": "userd@gmail.com",
   "password": "Securepassword123.",
-  "password_confirmation": "Securepassword123.",
-  "subscription_plan": "Free"
+  "password_confirmation": "Securepassword123."
 }
 
 # Login as User A
