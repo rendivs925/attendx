@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use validator::ValidationError;
 
 use crate::utils::{
-    locale_utils::Messages,
+    locale_utils::{Messages, Namespace},
     validation_utils::{add_error, format_error_message},
 };
 
@@ -15,7 +15,7 @@ const MIN_TLD_LENGTH: usize = 2;
 fn has_min_length(email: &str, messages: &Messages) -> Result<(), String> {
     let length = email.len();
     if length < MIN_EMAIL_LENGTH {
-        return Err(messages.get_validation_message("email.too_short"));
+        return Err(messages.get_message(Namespace::Validation, "email.too_short"));
     }
     Ok(())
 }
@@ -23,7 +23,7 @@ fn has_min_length(email: &str, messages: &Messages) -> Result<(), String> {
 fn has_max_length(email: &str, messages: &Messages) -> Result<(), String> {
     let length = email.len();
     if length > MAX_EMAIL_LENGTH {
-        return Err(messages.get_validation_message("email.too_long"));
+        return Err(messages.get_message(Namespace::Validation, "email.too_long"));
     }
     Ok(())
 }
@@ -32,8 +32,8 @@ fn has_at_and_dot(email: &str, messages: &Messages) -> Result<(), String> {
     let has_at = email.contains('@');
     let has_dot = email.contains('.');
     if !has_at || !has_dot {
-        let msg_at = messages.get_validation_message("email.missing_at");
-        let msg_dot = messages.get_validation_message("email.missing_dot");
+        let msg_at = messages.get_message(Namespace::Validation, "email.missing_at");
+        let msg_dot = messages.get_message(Namespace::Validation, "email.missing_dot");
         let msg = if !msg_at.is_empty() {
             msg_at
         } else if !msg_dot.is_empty() {
@@ -50,7 +50,7 @@ fn has_at_and_dot(email: &str, messages: &Messages) -> Result<(), String> {
 fn is_at_before_dot(email: &str, messages: &Messages) -> Result<(), String> {
     if let (Some(at_index), Some(dot_index)) = (email.find('@'), email.rfind('.')) {
         if at_index >= dot_index {
-            Err(messages.get_validation_message("email.at_before_dot"))
+            Err(messages.get_message(Namespace::Validation, "email.at_before_dot"))
         } else {
             Ok(())
         }
@@ -62,7 +62,7 @@ fn is_at_before_dot(email: &str, messages: &Messages) -> Result<(), String> {
 fn has_no_invalid_chars(email: &str, messages: &Messages) -> Result<(), String> {
     let has_invalid = email.chars().any(|c| c == ' ' || !c.is_ascii());
     if has_invalid {
-        Err(messages.get_validation_message("email.invalid_chars"))
+        Err(messages.get_message(Namespace::Validation, "email.invalid_chars"))
     } else {
         Ok(())
     }
@@ -71,7 +71,7 @@ fn has_no_invalid_chars(email: &str, messages: &Messages) -> Result<(), String> 
 fn has_no_consecutive_dots(email: &str, messages: &Messages) -> Result<(), String> {
     let has_consecutive = email.contains("..");
     if has_consecutive {
-        Err(messages.get_validation_message("email.consecutive_dots"))
+        Err(messages.get_message(Namespace::Validation, "email.consecutive_dots"))
     } else {
         Ok(())
     }
@@ -81,7 +81,7 @@ fn has_no_leading_or_trailing_dot(email: &str, messages: &Messages) -> Result<()
     let starts_with_dot = email.starts_with('.');
     let ends_with_dot = email.ends_with('.');
     if starts_with_dot || ends_with_dot {
-        Err(messages.get_validation_message("email.starts_or_ends_with_dot"))
+        Err(messages.get_message(Namespace::Validation, "email.starts_or_ends_with_dot"))
     } else {
         Ok(())
     }
@@ -90,7 +90,7 @@ fn has_no_leading_or_trailing_dot(email: &str, messages: &Messages) -> Result<()
 fn domain_starts_without_dot(email: &str, messages: &Messages) -> Result<(), String> {
     if let Some(domain) = get_domain(email) {
         if domain.starts_with('.') {
-            return Err(messages.get_validation_message("email.domain_starts_with_dot"));
+            return Err(messages.get_message(Namespace::Validation, "email.domain_starts_with_dot"));
         }
     }
     Ok(())
@@ -98,7 +98,7 @@ fn domain_starts_without_dot(email: &str, messages: &Messages) -> Result<(), Str
 
 fn domain_exists(email: &str, messages: &Messages) -> Result<(), String> {
     if get_domain(email).is_none() {
-        Err(messages.get_validation_message("email.missing_domain"))
+        Err(messages.get_message(Namespace::Validation, "email.missing_domain"))
     } else {
         Ok(())
     }
@@ -110,7 +110,7 @@ fn is_structure_valid_domain(email: &str, messages: &Messages) -> Result<(), Str
         let has_space = domain.contains(' ');
         let is_empty = domain.is_empty();
         if !has_dot || has_space || is_empty {
-            return Err(messages.get_validation_message("email.invalid_domain"));
+            return Err(messages.get_message(Namespace::Validation, "email.invalid_domain"));
         }
     }
     Ok(())
@@ -120,7 +120,9 @@ fn has_valid_domain_segment_length(email: &str, messages: &Messages) -> Result<(
     if let Some(domain) = get_domain(email) {
         if let Some(first_dot_index) = domain.find('.') {
             if first_dot_index < MIN_DOMAIN_SEGMENT_LENGTH {
-                return Err(messages.get_validation_message("email.invalid_domain_length"));
+                return Err(
+                    messages.get_message(Namespace::Validation, "email.invalid_domain_length")
+                );
             }
         }
     }
@@ -134,7 +136,7 @@ fn has_valid_tld_format(email: &str, messages: &Messages) -> Result<(), String> 
             let tld_length = tld.len();
             let all_alphabetic = tld.chars().all(|c| c.is_alphabetic());
             if tld_length < MIN_TLD_LENGTH || !all_alphabetic {
-                return Err(messages.get_validation_message("email.invalid_tld"));
+                return Err(messages.get_message(Namespace::Validation, "email.invalid_tld"));
             }
         }
     }
@@ -143,7 +145,7 @@ fn has_valid_tld_format(email: &str, messages: &Messages) -> Result<(), String> 
 
 fn is_overall_format_valid(email: &str, messages: &Messages) -> Result<(), String> {
     if !EmailAddress::is_valid(email) {
-        Err(messages.get_validation_message("email.invalid"))
+        Err(messages.get_message(Namespace::Validation, "email.invalid"))
     } else {
         Ok(())
     }

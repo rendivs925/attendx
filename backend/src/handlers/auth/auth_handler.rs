@@ -4,6 +4,7 @@ use shared::types::requests::auth::login_request::LoginRequest;
 use shared::types::requests::auth::register_request::RegisterRequest;
 use shared::types::responses::api_response::ApiResponse;
 use shared::types::responses::user_response::UserResponse;
+use shared::utils::locale_utils::Namespace;
 use shared::utils::validation_utils::validate_login;
 use shared::{
     types::requests::auth::validation_request::ValidationRequest,
@@ -35,7 +36,7 @@ pub async fn register_user_handler(
     };
 
     if let Err(errs) = validate_data(&validation_data, &messages) {
-        let err_msg = messages.get_auth_message("register.invalid_data");
+        let err_msg = messages.get_message(Namespace::Auth, "register.invalid_data");
         return handle_validation_error(errs, &err_msg);
     }
 
@@ -43,7 +44,7 @@ pub async fn register_user_handler(
         Ok(user) => {
             let user_response = UserResponse::from(user);
             HttpResponse::Created().json(ApiResponse::success(
-                messages.get_auth_message("register.success"),
+                messages.get_message(Namespace::Auth, "register.success"),
                 Some(user_response),
             ))
         }
@@ -59,38 +60,40 @@ pub async fn jwt_login_handler(
     req: HttpRequest,
     user_service: web::Data<Arc<UserService>>,
     credentials: web::Json<LoginRequest>,
-) -> HttpResponse {
+) -> Result<HttpResponse, actix_web::Error> {
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
-    let data = credentials.into_inner();
+    let credentials = credentials.into_inner();
 
-    if let Err(errs) = validate_login(&data.email, &data.password, &messages) {
-        let err_msg = messages.get_auth_message("login.invalid_credentials");
-        return handle_validation_error(errs, &err_msg);
+    if let Err(errors) = validate_login(&credentials.email, &credentials.password, &messages) {
+        let msg = messages.get_message(Namespace::Auth, "login.invalid_credentials");
+        return Ok(handle_validation_error(errors, &msg));
     }
 
     match user_service
-        .authenticate_user(&data.email, &data.password)
+        .authenticate_user(&credentials.email, &credentials.password)
         .await
     {
         Ok((user, token)) => {
-            info!("User {} successfully logged in.", data.email);
+            info!("User {} successfully logged in.", &credentials.email);
             let cookie = generate_cookie(token);
-            let user_response = UserResponse::from(user);
-
-            HttpResponse::Ok().cookie(cookie).json(ApiResponse::success(
-                messages.get_auth_message("login.success"),
-                Some(user_response),
-            ))
+            let response = ApiResponse::success(
+                messages.get_message(Namespace::Auth, "login.success"),
+                Some(UserResponse::from(user)),
+            );
+            Ok(HttpResponse::Ok().cookie(cookie).json(response))
         }
         Err(UserServiceError::InvalidCredentials | UserServiceError::NotFound) => {
-            HttpResponse::Unauthorized().json(ApiResponse::<()>::error(
+            let response = ApiResponse::<()>::error(
                 UserServiceError::InvalidCredentials.to_message(&messages),
                 None,
-            ))
+            );
+            Ok(HttpResponse::Unauthorized().json(response))
         }
-        Err(e) => HttpResponse::InternalServerError()
-            .json(ApiResponse::<()>::error(e.to_message(&messages), None)),
+        Err(e) => {
+            let response = ApiResponse::<()>::error(e.to_message(&messages), None);
+            Ok(HttpResponse::InternalServerError().json(response))
+        }
     }
 }
 
@@ -111,7 +114,7 @@ pub async fn logout_user_handler(req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok()
         .cookie(expired)
         .json(ApiResponse::<()>::success(
-            messages.get_auth_message("logout.success"),
+            messages.get_message(Namespace::Auth, "logout.success"),
             None,
         ))
 }

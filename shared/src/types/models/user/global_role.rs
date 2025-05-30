@@ -5,3 +5,9 @@ pub enum GlobalRole {
     User,
     Developer,
 }
+
+impl Default for GlobalRole {
+    fn default() -> Self {
+        Self::User
+    }
+}

@@ -1,0 +1,27 @@
+{
+  "create": {
+    "success": "Attendance record created successfully.",
+    "failed": "Failed to create attendance record."
+  },
+  "fetch": {
+    "success": "Attendance record fetched successfully.",
+    "not_found": "Attendance record not found.",
+    "all_success": "All attendance records fetched successfully."
+  },
+  "update": {
+    "success": "Attendance record updated successfully.",
+    "not_found": "Attendance record to update not found."
+  },
+  "delete": {
+    "success": "Attendance record deleted successfully.",
+    "not_found": "Attendance record to delete not found."
+  },
+  "check_in": {
+    "success": "Successfully checked in."
+  },
+  "check_out": {
+    "success": "Successfully checked out."
+  },
+  "already_checked_in": "You are already checked in for today.",
+  "not_checked_in_yet": "You haven't checked in for today yet."
+}

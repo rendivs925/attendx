@@ -1,0 +1,8 @@
+{
+  "invalid_data": "Invalid registration data.",
+  "not_found": "The requested resource was not found.",
+  "db_error": "A database error occurred. Please try again later.",
+  "jwt_generation_failed": "Failed to generate authentication token. Please try again.",
+  "password_hashing_failed": "Failed to process password securely. Please contact support.",
+  "duplicate_email": "This email address is already registered."
+}

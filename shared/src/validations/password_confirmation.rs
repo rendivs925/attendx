@@ -1,5 +1,5 @@
 use crate::utils::{
-    locale_utils::Messages,
+    locale_utils::{Messages, Namespace},
     validation_utils::{add_error, format_error_message},
 };
 use validator::ValidationError;
@@ -10,7 +10,8 @@ pub fn validate_password_confirmation(
     password_confirmation: Option<&str>,
 ) -> Result<(), ValidationError> {
     let Some(confirm) = password_confirmation else {
-        let error_message = messages.get_validation_message("password_confirmation.required");
+        let error_message =
+            messages.get_message(Namespace::Validation, "password_confirmation.required");
         return Err(add_error(
             "password_confirmation.required",
             error_message,
@@ -19,7 +20,8 @@ pub fn validate_password_confirmation(
     };
 
     if password != confirm {
-        let error_message = messages.get_validation_message("password_confirmation.mismatch");
+        let error_message =
+            messages.get_message(Namespace::Validation, "password_confirmation.mismatch");
         let formatted = format_error_message(&error_message);
         return Err(add_error(
             "password_confirmation.mismatch",

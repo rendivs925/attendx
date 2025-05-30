@@ -1,4 +1,3 @@
-pub mod defaults;
 pub mod global_role;
 pub mod permissions;
 pub mod role;

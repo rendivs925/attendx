@@ -13,7 +13,7 @@ async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clon
 
     let _ = env_logger::try_init();
 
-    let db = Arc::new(Database::new().await.expect("❌ Failed to init DB"));
+    let db = Arc::new(Database::new().await.expect("Failed to init DB"));
 
     let app_repository = Arc::new(AppRepository::new(db).await);
 

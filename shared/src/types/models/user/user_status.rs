@@ -6,3 +6,9 @@ pub enum UserStatus {
     Inactive,
     Suspended,
 }
+
+impl Default for UserStatus {
+    fn default() -> Self {
+        Self::Active
+    }
+}

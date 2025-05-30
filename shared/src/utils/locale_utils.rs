@@ -1,5 +1,6 @@
 use log::warn;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 use std::path::Path;
@@ -24,13 +25,19 @@ impl Lang {
     }
 }
 
+impl fmt::Display for Lang {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Lang::En => write!(f, "en"),
+            Lang::Id => write!(f, "id"),
+            Lang::De => write!(f, "de"),
+            Lang::Ja => write!(f, "ja"),
+        }
+    }
+}
+
 fn load_message_file(lang: Lang, namespace: &str) -> Value {
-    let lang_folder = match lang {
-        Lang::En => "en",
-        Lang::De => "de",
-        Lang::Id => "id",
-        Lang::Ja => "ja",
-    };
+    let lang_folder = lang.to_string();
 
     let file_path = Path::new("./shared/locales")
         .join(lang_folder)
@@ -51,22 +58,37 @@ fn load_message_file(lang: Lang, namespace: &str) -> Value {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Namespace {
     Validation,
     User,
     Auth,
+    Common,
+    Organization,
+    Attendance,
+}
+
+impl fmt::Display for Namespace {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Namespace::Validation => write!(f, "validation"),
+            Namespace::User => write!(f, "user"),
+            Namespace::Auth => write!(f, "auth"),
+            Namespace::Common => write!(f, "common"),
+            Namespace::Organization => write!(f, "organization"),
+            Namespace::Attendance => write!(f, "attendance"),
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct Messages {
-    pub user: Value,
-    pub validation: Value,
-    pub auth: Value,
+    pub namespaces: HashMap<Namespace, Value>,
 }
 
 #[derive(Debug)]
 pub enum MessageError {
+    MissingNamespace { namespace: Namespace },
     MissingKey { namespace: Namespace, path: String },
     InvalidType { namespace: Namespace, path: String },
 }
@@ -74,6 +96,13 @@ pub enum MessageError {
 impl fmt::Display for MessageError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            MessageError::MissingNamespace { namespace } => {
+                write!(
+                    f,
+                    "Messages for namespace '{:?}' not loaded or found",
+                    namespace
+                )
+            }
             MessageError::MissingKey { namespace, path } => {
                 write!(f, "Missing message in {:?} at path '{}'", namespace, path)
             }
@@ -92,36 +121,38 @@ impl std::error::Error for MessageError {}
 
 impl Messages {
     pub fn new(lang: Lang) -> Self {
-        let user = load_message_file(lang, "user");
-        let validation = load_message_file(lang, "validation");
-        let auth = load_message_file(lang, "auth");
+        let mut namespaces = HashMap::new();
 
-        assert!(user.is_object(), "Missing or invalid 'user' messages");
-        assert!(
-            validation.is_object(),
-            "Missing or invalid 'validation' messages"
-        );
-        assert!(auth.is_object(), "Missing or invalid 'auth' messages");
+        let namespaces_to_load = [
+            Namespace::User,
+            Namespace::Validation,
+            Namespace::Auth,
+            Namespace::Common,
+            Namespace::Organization,
+            Namespace::Attendance,
+        ];
 
-        Self {
-            user,
-            validation,
-            auth,
+        for &ns in &namespaces_to_load {
+            let json_value = load_message_file(lang, &ns.to_string());
+            assert!(
+                json_value.is_object(),
+                "Missing or invalid '{}' messages for language '{}'",
+                ns.to_string(),
+                lang.to_string()
+            );
+            namespaces.insert(ns, json_value);
         }
+
+        Self { namespaces }
     }
 
     pub fn get(&self, namespace: &Namespace, path: &str) -> Option<&Value> {
-        let root = match namespace {
-            Namespace::User => &self.user,
-            Namespace::Validation => &self.validation,
-            Namespace::Auth => &self.auth,
-        };
+        let root = self.namespaces.get(namespace)?;
 
         let mut current = root;
         for key in path.split('.') {
             current = current.get(key)?;
         }
-
         Some(current)
     }
 
@@ -129,7 +160,7 @@ impl Messages {
         let value = self
             .get(&namespace, path)
             .ok_or_else(|| MessageError::MissingKey {
-                namespace: namespace.clone(),
+                namespace,
                 path: path.to_string(),
             })?;
 
@@ -142,32 +173,18 @@ impl Messages {
             })
     }
 
-    pub fn get_user_message(&self, key: &str) -> String {
-        match self.get_str(Namespace::User, key) {
+    pub fn get_message(&self, namespace: Namespace, key: &str) -> String {
+        match self.get_str(namespace, key) {
             Ok(msg) => msg,
             Err(e) => {
-                warn!("Failed to get user message for key '{}': {}", key, e);
-                format!("Error: missing user message for key '{}'", key)
-            }
-        }
-    }
-
-    pub fn get_auth_message(&self, key: &str) -> String {
-        match self.get_str(Namespace::Auth, key) {
-            Ok(msg) => msg,
-            Err(e) => {
-                warn!("Failed to get auth message for key '{}': {}", key, e);
-                format!("Error: missing auth message for key '{}'", key)
-            }
-        }
-    }
-
-    pub fn get_validation_message(&self, key: &str) -> String {
-        match self.get_str(Namespace::Validation, key) {
-            Ok(msg) => msg,
-            Err(e) => {
-                warn!("Failed to get validation message for key '{}': {}", key, e);
-                format!("Error: missing validation message for key '{}'", key)
+                warn!(
+                    "Failed to get message for namespace '{}' and key '{}': {}",
+                    namespace, key, e
+                );
+                format!(
+                    "Error: missing message for namespace '{}' and key '{}'",
+                    namespace, key
+                )
             }
         }
     }

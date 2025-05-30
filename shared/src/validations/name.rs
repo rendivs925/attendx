@@ -2,7 +2,7 @@ use rayon::prelude::*;
 use validator::ValidationError;
 
 use crate::utils::{
-    locale_utils::Messages,
+    locale_utils::{Messages, Namespace},
     validation_utils::{add_error, format_error_message},
 };
 
@@ -11,7 +11,7 @@ const MAX_NAME_LENGTH: usize = 100;
 
 fn is_not_empty(name: &str, messages: &Messages) -> Result<(), String> {
     if name.trim().is_empty() {
-        Err(messages.get_validation_message("name.empty"))
+        Err(messages.get_message(Namespace::Validation, "name.empty"))
     } else {
         Ok(())
     }
@@ -19,7 +19,7 @@ fn is_not_empty(name: &str, messages: &Messages) -> Result<(), String> {
 
 fn has_min_length(name: &str, messages: &Messages) -> Result<(), String> {
     if name.len() < MIN_NAME_LENGTH {
-        Err(messages.get_validation_message("name.too_short"))
+        Err(messages.get_message(Namespace::Validation, "name.too_short"))
     } else {
         Ok(())
     }
@@ -27,7 +27,7 @@ fn has_min_length(name: &str, messages: &Messages) -> Result<(), String> {
 
 fn has_max_length(name: &str, messages: &Messages) -> Result<(), String> {
     if name.len() > MAX_NAME_LENGTH {
-        Err(messages.get_validation_message("name.too_long"))
+        Err(messages.get_message(Namespace::Validation, "name.too_long"))
     } else {
         Ok(())
     }
@@ -35,7 +35,7 @@ fn has_max_length(name: &str, messages: &Messages) -> Result<(), String> {
 
 fn has_valid_chars(name: &str, messages: &Messages) -> Result<(), String> {
     if !name.chars().all(|c| c.is_alphabetic() || c.is_whitespace()) {
-        Err(messages.get_validation_message("name.invalid_chars"))
+        Err(messages.get_message(Namespace::Validation, "name.invalid_chars"))
     } else {
         Ok(())
     }

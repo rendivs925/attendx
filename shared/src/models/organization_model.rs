@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::types::models::organization::organization_limit::OrganizationLimits;
+use crate::types::models::user::subscription::SubscriptionPlan;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Organization {
@@ -17,14 +18,31 @@ pub struct Organization {
 
     pub password: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub logo_url: Option<String>,
+    pub logo_url: String,
 
-    #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,
 
-    #[serde(default = "Utc::now")]
     pub updated_at: DateTime<Utc>,
 
     pub limits: OrganizationLimits,
+}
+
+impl Default for Organization {
+    fn default() -> Self {
+        let now = Utc::now();
+
+        let default_limits = OrganizationLimits::from_plan(&SubscriptionPlan::Free);
+
+        Self {
+            _id: None,
+            name: String::default(),
+            email: String::default(),
+            owner_id: Default::default(),
+            password: String::default(),
+            logo_url: Default::default(),
+            created_at: now,
+            updated_at: now,
+            limits: default_limits,
+        }
+    }
 }

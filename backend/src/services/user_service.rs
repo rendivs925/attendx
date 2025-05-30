@@ -5,18 +5,16 @@ use crate::{
 use shared::{
     models::user_model::User,
     types::{
-        models::user::defaults::{default_global_role, default_status},
         requests::{
             auth::register_request::RegisterRequest, user::update_user_request::UpdateUserRequest,
         },
         responses::user_response::UserResponse,
     },
+    utils::locale_utils::Namespace,
 };
 
-use bson::oid::ObjectId;
-use chrono::Utc;
 use shared::utils::locale_utils::Messages;
-use std::{collections::HashSet, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub enum UserServiceError {
@@ -31,17 +29,21 @@ pub enum UserServiceError {
 impl UserServiceError {
     pub fn to_message(&self, messages: &Messages) -> String {
         match self {
-            UserServiceError::NotFound => messages.get_user_message("fetch.not_found"),
+            UserServiceError::NotFound => messages.get_message(Namespace::User, "fetch.not_found"),
             UserServiceError::InvalidCredentials => {
-                messages.get_auth_message("login.invalid_credentials")
+                messages.get_message(Namespace::Auth, "login.invalid_credentials")
             }
-            UserServiceError::DuplicateEmail => messages.get_auth_message("register.duplicate"),
-            UserServiceError::DbError(_) => messages.get_auth_message("register.db_error"),
+            UserServiceError::DuplicateEmail => {
+                messages.get_message(Namespace::Auth, "register.duplicate")
+            }
+            UserServiceError::DbError(_) => {
+                messages.get_message(Namespace::Auth, "register.db_error")
+            }
             UserServiceError::JwtGenerationError(_) => {
-                messages.get_auth_message("auth.jwt_generation_failed")
+                messages.get_message(Namespace::Auth, "auth.jwt_generation_failed")
             }
             UserServiceError::PasswordHashingError(_) => {
-                messages.get_auth_message("auth.password_hashing_failed")
+                messages.get_message(Namespace::Auth, "auth.password_hashing_failed")
             }
         }
     }
@@ -95,20 +97,11 @@ impl UserService {
         let hashed_password = hash_password(&new_user.password)
             .map_err(|e| UserServiceError::PasswordHashingError(e.to_string()))?;
 
-        let now = Utc::now();
-
         let user = User {
-            _id: Some(ObjectId::new()),
             name: new_user.name,
             email: new_user.email.clone(),
             password: hashed_password,
-            organization_ids: HashSet::new(),
-            owned_organizations: 0,
-            subscription_plan: new_user.subscription_plan,
-            status: default_status(),
-            global_role: default_global_role(),
-            created_at: now,
-            updated_at: now,
+            ..Default::default()
         };
 
         self.user_repository
