@@ -1,0 +1,9 @@
+{
+  "create": {
+    "duplicate": "In dieser Organisation existiert bereits ein Mitglied."
+  },
+  "db_error": "Es trat ein interner Datenbankfehler auf.",
+  "fetch": {
+    "not_found": "Organisationsmitglied nicht gefunden."
+  }
+}

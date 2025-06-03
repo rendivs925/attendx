@@ -16,7 +16,6 @@ futures-util = "0.3.30"
 jsonwebtoken = "9.3.0"
 mongodb = "3.0.0"
 rand = "0.8.5"
-bson = "2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.128"
 tokio = { version = "1.40.0", features = ["macros", "rt", "rt-multi-thread"] }
@@ -36,4 +35,5 @@ rand_core = "0.9.3"
 rayon = "1.10.0"
 shuttle-actix-web = "0.55.0"
 shuttle-runtime = "0.55.0"
+bson = { version = "2.15.0", features = ["chrono"] }
 

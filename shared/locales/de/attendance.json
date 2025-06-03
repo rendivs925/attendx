@@ -1,0 +1,27 @@
+{
+  "already_checked_in": "Sie sind bereits heute eingecheckt.",
+  "check_in": {
+    "success": "Erfolgreich überprüft."
+  },
+  "check_out": {
+    "success": "Erfolgreich ausgecheckt."
+  },
+  "create": {
+    "failed": "Versäumt, Teilnahmerekord zu erstellen.",
+    "success": "Aufmerksamkeitsrekord erfolgreich erstellt."
+  },
+  "delete": {
+    "not_found": "Achtung-Datensatz nicht gefunden zu löschen.",
+    "success": "Aufmerksamkeitsrekord erfolgreich gelöscht."
+  },
+  "fetch": {
+    "all_success": "Alle Teilnehmerrekorde wurden erfolgreich erstellt.",
+    "not_found": "Achtung nicht gefunden.",
+    "success": "Achtung Rekord erfolgreich abgeholt."
+  },
+  "not_checked_in_yet": "Sie haben heute noch nicht nachgesehen.",
+  "update": {
+    "not_found": "Achtung-Datensatz, um nicht gefunden zu aktualisieren.",
+    "success": "Achtung Rekord erfolgreich aktualisiert."
+  }
+}

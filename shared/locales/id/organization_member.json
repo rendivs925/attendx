@@ -1,0 +1,9 @@
+{
+  "create": {
+    "duplicate": "Anggota sudah ada dalam organisasi ini."
+  },
+  "db_error": "Terjadi galat basis data internal.",
+  "fetch": {
+    "not_found": "Anggota organisasi tidak ditemukan."
+  }
+}

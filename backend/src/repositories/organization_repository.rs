@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::config::database::Database;
-use crate::constants::ORGANIZATIONS_COL_NAME;
+use crate::constants::ORGANIZATION_COL_NAME;
 use bson::Document;
 use futures_util::stream::TryStreamExt;
 use mongodb::bson::{doc, to_document};
@@ -14,7 +14,7 @@ pub struct OrganizationRepository {
 
 impl OrganizationRepository {
     pub async fn new(db: Arc<Database>) -> Result<Self> {
-        let collection = db.collection::<Organization>(&ORGANIZATIONS_COL_NAME);
+        let collection = db.collection::<Organization>(&ORGANIZATION_COL_NAME);
         Ok(Self { collection })
     }
 

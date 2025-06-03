@@ -8,9 +8,12 @@ use crate::{
 };
 use std::sync::Arc;
 
+use super::organization_member_repository::OrganizationMemberRepository;
+
 pub struct AppRepository {
     pub user_repository: Arc<UserRepository>,
     pub organization_repository: Arc<OrganizationRepository>,
+    pub organization_member_repository: Arc<OrganizationMemberRepository>,
     // pub attendance_repository: Arc<AttendanceRepository>,
 }
 
@@ -18,11 +21,15 @@ impl AppRepository {
     pub async fn new(db: Arc<Database>) -> Self {
         let user_repository = UserRepository::new(db.clone())
             .await
-            .expect("❌ Failed to initialize UserRepository");
+            .expect("Failed to initialize UserRepository");
 
         let organization_repository = OrganizationRepository::new(db.clone())
             .await
-            .expect("❌ Failed to initialize OrganizationRepository");
+            .expect("Failed to initialize OrganizationRepository");
+
+        let organization_member_repository = OrganizationMemberRepository::new(db.clone())
+            .await
+            .expect("Failed to initialize OrganizationMemberRepository");
 
         // let attendance_repository = AttendanceRepository::new(db.clone())
         //     .await
@@ -31,6 +38,7 @@ impl AppRepository {
         Self {
             user_repository: Arc::new(user_repository),
             organization_repository: Arc::new(organization_repository),
+            organization_member_repository: Arc::new(organization_member_repository),
             // attendance_repository: Arc::new(attendance_repository),
         }
     }

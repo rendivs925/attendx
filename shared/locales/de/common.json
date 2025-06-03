@@ -1,0 +1,8 @@
+{
+  "db_error": "Es kam ein Datenbankfehler auf. Bitte versuchen Sie es später wieder.",
+  "duplicate_email": "Diese E-Mail-Adresse ist bereits registriert.",
+  "invalid_data": "Invalide Registrierungsdaten.",
+  "jwt_generation_failed": "Nicht zur Generierung von Authentifizierungs-Token. Bitte versuchen Sie es noch mal.",
+  "not_found": "Die angeforderte Ressource wurde nicht gefunden.",
+  "password_hashing_failed": "Passwort nicht sicher zu verarbeiten. Bitte kontaktieren Sie den Support."
+}

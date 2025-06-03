@@ -4,9 +4,12 @@ use crate::{
 };
 use std::sync::Arc;
 
+use super::organization_member_service::OrganizationMemberService;
+
 pub struct AppService {
     pub user_service: Arc<UserService>,
     pub organization_service: Arc<OrganizationService>,
+    pub organization_member_service: Arc<OrganizationMemberService>,
 }
 
 impl AppService {
@@ -15,10 +18,14 @@ impl AppService {
         let organization_service = Arc::new(OrganizationService::new(
             repo.organization_repository.clone(),
         ));
+        let organization_member_service = Arc::new(OrganizationMemberService::new(
+            repo.organization_member_repository.clone(),
+        ));
 
         Self {
             user_service,
             organization_service,
+            organization_member_service,
         }
     }
 }

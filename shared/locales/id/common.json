@@ -1,0 +1,8 @@
+{
+  "db_error": "Terjadi galat basis data. Silakan coba lagi nanti.",
+  "duplicate_email": "Alamat email ini sudah terdaftar.",
+  "invalid_data": "Data registrasi tidak sah.",
+  "jwt_generation_failed": "Gagal membuat token otentikasi. Tolong coba lagi.",
+  "not_found": "Sumber daya yang diminta tak ditemukan.",
+  "password_hashing_failed": "Gagal memproses sandi secara aman. Silahkan hubungi dukungan."
+}

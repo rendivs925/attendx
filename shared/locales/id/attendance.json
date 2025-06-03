@@ -1,0 +1,27 @@
+{
+  "already_checked_in": "Anda sudah check-in untuk hari ini.",
+  "check_in": {
+    "success": "Berhasil check in."
+  },
+  "check_out": {
+    "success": "Berhasil diperiksa."
+  },
+  "create": {
+    "failed": "Gagal membuat catatan kehadiran.",
+    "success": "Catatan kehadiran berhasil dibuat."
+  },
+  "delete": {
+    "not_found": "Catatan kehadiran untuk menghapus tak ditemukan.",
+    "success": "Catatan kehadiran dihapus dengan sukses."
+  },
+  "fetch": {
+    "all_success": "Semua catatan kehadiran sukses diambil.",
+    "not_found": "Catatan kehadiran tidak ditemukan.",
+    "success": "Catatan kehadiran berhasil diambil."
+  },
+  "not_checked_in_yet": "Anda belum check-in untuk hari ini belum.",
+  "update": {
+    "not_found": "Catatan kehadiran untuk memperbarui tak ditemukan.",
+    "success": "Catatan kehadiran diperbarui dengan sukses."
+  }
+}

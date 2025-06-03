@@ -1,4 +1,3 @@
-use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +11,7 @@ pub struct OrganizationResponse {
     pub id: String,
     pub name: String,
     pub email: String,
-    pub owner_id: ObjectId,
+    pub owner_id: String,
     pub logo_url: String,
     pub limits: OrganizationLimits,
     pub created_at: DateTime<Utc>,

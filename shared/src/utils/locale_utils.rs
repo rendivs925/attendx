@@ -66,6 +66,7 @@ pub enum Namespace {
     Common,
     Organization,
     Attendance,
+    OrganizationMember,
 }
 
 impl fmt::Display for Namespace {
@@ -77,6 +78,7 @@ impl fmt::Display for Namespace {
             Namespace::Common => write!(f, "common"),
             Namespace::Organization => write!(f, "organization"),
             Namespace::Attendance => write!(f, "attendance"),
+            Namespace::OrganizationMember => write!(f, "organization_member"),
         }
     }
 }
@@ -130,6 +132,7 @@ impl Messages {
             Namespace::Common,
             Namespace::Organization,
             Namespace::Attendance,
+            Namespace::OrganizationMember,
         ];
 
         for &ns in &namespaces_to_load {

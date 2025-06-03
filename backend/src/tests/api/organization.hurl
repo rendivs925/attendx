@@ -1,7 +1,7 @@
 # Register user with Free plan
 POST http://localhost:8000/auth/register
 Content-Type: application/json
-Accept-Language: en
+Accept-Language: ja
 
 {
   "name": "User D",
@@ -13,17 +13,17 @@ Accept-Language: en
 # Login as User A
 POST http://localhost:8000/auth/login
 Content-Type: application/json
-Accept-Language: en
+Accept-Language: ja
 
 {
-  "email": "usera@gmail.com",
+  "email": "userd@gmail.com",
   "password": "Securepassword123."
 }
 
 # Create organization (limits should be inferred from subscription plan)
 POST http://localhost:8000/organizations/new
 Content-Type: application/json
-Accept-Language: en
+Accept-Language: ja
 Cookie: jwt_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiVXNlciBBIiwiZW1haWwiOiJ1c2VyYUBnbWFpbC5jb20iLCJleHAiOjE3NDg0NDMyMTh9.yjj8ioV3lRklcFETe590yO2W0E_TiTBzkkHSl0TOSIM
 
 {
@@ -72,7 +72,7 @@ Cookie: jwt_token=<your_token_here>
 
 # Get all organizations
 GET http://localhost:8000/organizations/all
-Accept-Language: en
+Accept-Language: ja
 
 # Get organization by ID (replace with actual ID)
 GET http://localhost:8000/organizations/64a9d78fbc2a2a2a2a2a2a2a

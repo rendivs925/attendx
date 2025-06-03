@@ -20,4 +20,5 @@ lazy_env_var!(DB_NAME);
 lazy_env_var!(USER_COL_NAME);
 lazy_env_var!(CLASS_COL_NAME);
 lazy_env_var!(ATTENDANCE_COL_NAME);
-lazy_env_var!(ORGANIZATIONS_COL_NAME);
+lazy_env_var!(ORGANIZATION_COL_NAME);
+lazy_env_var!(ORGANIZATION_MEMBER_COL_NAME);

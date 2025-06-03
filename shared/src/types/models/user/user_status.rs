@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
+use strum_macros::Display;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Display, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum UserStatus {
     Active,
     Inactive,

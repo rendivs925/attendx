@@ -1,5 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
+use strum_macros::Display;
 
 const PAID_SUBSCRIPTION_DURATION_DAYS: i64 = 30;
 
@@ -93,7 +94,9 @@ impl Default for Subscription {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Display, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum SubscriptionPlan {
     Free,
     Pro,
@@ -107,7 +110,9 @@ impl Default for SubscriptionPlan {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Display, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum SubscriptionStatus {
     Active,
     Expired,

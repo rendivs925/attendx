@@ -1,0 +1,19 @@
+{
+  "create": {
+    "duplicate_email": "Eine Organisation mit dieser E-Mail existiert bereits.",
+    "success": "Organisation erstellt erfolgreich."
+  },
+  "delete": {
+    "not_found": "Organisation zu löschen nicht gefunden.",
+    "success": "Organisation erfolgreich gelöscht."
+  },
+  "fetch": {
+    "all_success": "Alle Organisationen haben erfolgreich abgeholt.",
+    "not_found": "Organisation nicht gefunden.",
+    "success": "Organisation erfolgreich abgeholt."
+  },
+  "update": {
+    "not_found": "Organisation zu aktualisieren nicht gefunden.",
+    "success": "Organisation erfolgreich aktualisiert."
+  }
+}
