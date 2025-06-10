@@ -5,8 +5,9 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::web_sys::SubmitEvent;
+use shared::types::requests::auth::validation_request::ValidationRequest;
 use shared::utils::locale_utils::{Lang, Messages};
-use shared::utils::validation_utils::validate_register;
+use shared::utils::validation_utils::validate_data;
 use std::sync::Arc;
 use validator::ValidationErrors;
 
@@ -20,11 +21,10 @@ pub struct RegisterFormState {
 
 pub fn use_register_form() -> RegisterFormState {
     let auth = use_auth_store();
-
     let name = NodeRef::<html::Input>::new();
     let email = NodeRef::<html::Input>::new();
     let password = NodeRef::<html::Input>::new();
-    let error = RwSignal::new(None::<ValidationErrors>);
+    let error = RwSignal::new(None);
     let messages = Arc::new(Messages::new(Lang::En));
 
     let on_submit = {
@@ -37,29 +37,25 @@ pub fn use_register_form() -> RegisterFormState {
 
         Callback::new(move |ev: SubmitEvent| {
             ev.prevent_default();
-
             let name_value = name.get().map(|el| el.value()).unwrap_or_default();
             let email_value = email.get().map(|el| el.value()).unwrap_or_default();
             let password_value = password.get().map(|el| el.value()).unwrap_or_default();
 
-            match validate_register(&name_value, &email_value, &password_value, &messages) {
+            let req = ValidationRequest {
+                name: Some(name_value.clone()),
+                email: Some(email_value.clone()),
+                password: Some(password_value.clone()),
+                ..Default::default()
+            };
+
+            match validate_data(&req, &messages) {
                 Ok(_) => {
                     error.set(None);
-                    spawn_local({
-                        let auth = auth.clone();
-                        let name_value = name_value.clone();
-                        let email_value = email_value.clone();
-                        let password_value = password_value.clone();
-
-                        async move {
-                            register_with_email(auth, name_value, email_value, password_value)
-                                .await;
-                        }
+                    spawn_local(async move {
+                        register_with_email(auth, name_value, email_value, password_value).await;
                     });
                 }
-                Err(e) => {
-                    error.set(Some(e));
-                }
+                Err(e) => error.set(Some(e)),
             }
         })
     };

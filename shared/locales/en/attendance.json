@@ -23,5 +23,6 @@
     "success": "Successfully checked out."
   },
   "already_checked_in": "You are already checked in for today.",
-  "not_checked_in_yet": "You haven't checked in for today yet."
+  "not_checked_in_yet": "You haven't checked in for today yet.",
+  "invalid_id": "The provided ID is invalid."
 }

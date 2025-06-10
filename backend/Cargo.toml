@@ -36,4 +36,6 @@ rayon = "1.10.0"
 shuttle-actix-web = "0.55.0"
 shuttle-runtime = "0.55.0"
 bson = { version = "2.15.0", features = ["chrono"] }
+actix-web-actors = "4.3.1"
+actix = "0.13.5"
 

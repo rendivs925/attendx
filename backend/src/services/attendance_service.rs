@@ -1,5 +1,4 @@
 use bson::{DateTime, oid::ObjectId};
-use chrono::Utc;
 use mongodb::bson::to_document;
 use shared::{
     models::attendance_model::Attendance,
@@ -12,6 +11,7 @@ use shared::{
     },
     utils::locale_utils::{Messages, Namespace},
 };
+use std::fmt;
 use std::{str::FromStr, sync::Arc};
 
 use crate::repositories::attendance_repository::AttendanceRepository;
@@ -37,9 +37,20 @@ impl AttendanceServiceError {
                 eprintln!("Database error: {}", e);
                 messages.get_message(Namespace::Attendance, "db_error")
             }
-            AttendanceServiceError::InvalidId(e) => {
+            AttendanceServiceError::InvalidId(_) => {
                 messages.get_message(Namespace::Attendance, "invalid_id")
             }
+        }
+    }
+}
+
+impl fmt::Display for AttendanceServiceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AttendanceServiceError::NotFound => write!(f, "Attendance not found"),
+            AttendanceServiceError::DuplicateAttendance => write!(f, "Duplicate attendance entry"),
+            AttendanceServiceError::DbError(msg) => write!(f, "Database error: {}", msg),
+            AttendanceServiceError::InvalidId(msg) => write!(f, "Invalid ID: {}", msg),
         }
     }
 }
@@ -64,9 +75,7 @@ impl AttendanceService {
         let organization_id = ObjectId::from_str(&request.organization_id)
             .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
 
-        let now = Utc::now();
         let attendance = Attendance {
-            _id: Some(ObjectId::new()),
             user_id,
             organization_id,
             attendance_type: request.attendance_type,
@@ -75,8 +84,7 @@ impl AttendanceService {
             clock_out: request.clock_out,
             method: request.method,
             location: request.location,
-            created_at: now,
-            updated_at: now,
+            ..Default::default()
         };
 
         let created_attendance = self
@@ -104,38 +112,12 @@ impl AttendanceService {
         Ok(attendance.map(AttendanceResponse::from))
     }
 
-    pub async fn get_all_attendances_for_user_in_org(
+    pub async fn get_all_attendances(
         &self,
-        user_id_str: &str,
-        organization_id_str: &str,
     ) -> Result<Vec<AttendanceResponse>, AttendanceServiceError> {
-        let user_id = ObjectId::from_str(user_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
-        let organization_id = ObjectId::from_str(organization_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
-
         let attendances = self
             .attendance_repository
-            .get_all_attendances_for_user_in_org(&user_id, &organization_id)
-            .await
-            .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
-
-        Ok(attendances
-            .into_iter()
-            .map(AttendanceResponse::from)
-            .collect())
-    }
-
-    pub async fn get_all_attendances_for_org(
-        &self,
-        organization_id_str: &str,
-    ) -> Result<Vec<AttendanceResponse>, AttendanceServiceError> {
-        let organization_id = ObjectId::from_str(organization_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
-
-        let attendances = self
-            .attendance_repository
-            .get_all_attendances_for_org(&organization_id)
+            .get_all_attendances()
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
 

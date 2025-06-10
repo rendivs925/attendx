@@ -90,20 +90,6 @@ pub fn format_error_message(msg: &str) -> String {
     }
 }
 
-pub fn validate_login(
-    email: impl Into<String>,
-    password: impl Into<String>,
-    messages: &Messages,
-) -> Result<(), ValidationErrors> {
-    let data = ValidationRequest {
-        email: Some(email.into()),
-        password: Some(password.into()),
-        ..Default::default()
-    };
-
-    validate_data(&data, messages)
-}
-
 pub fn validate_data(
     data: &ValidationRequest,
     messages: &Messages,

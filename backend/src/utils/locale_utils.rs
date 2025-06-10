@@ -11,5 +11,5 @@ pub fn get_lang(req: &actix_web::HttpRequest) -> Lang {
                 .and_then(|tag| tag.split('-').next())
         })
         .map(Lang::from_code)
-        .unwrap_or(Lang::De)
+        .unwrap_or(Lang::En)
 }

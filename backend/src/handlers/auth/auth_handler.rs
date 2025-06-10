@@ -5,7 +5,6 @@ use shared::types::requests::auth::register_request::RegisterRequest;
 use shared::types::responses::api_response::ApiResponse;
 use shared::types::responses::user_response::UserResponse;
 use shared::utils::locale_utils::Namespace;
-use shared::utils::validation_utils::validate_login;
 use shared::{
     types::requests::auth::validation_request::ValidationRequest,
     utils::{locale_utils::Messages, validation_utils::validate_data},
@@ -62,7 +61,13 @@ pub async fn jwt_login_handler(
     let messages = Messages::new(lang);
     let credentials = credentials.into_inner();
 
-    if let Err(errors) = validate_login(&credentials.email, &credentials.password, &messages) {
+    let validation_data = ValidationRequest {
+        email: Some(credentials.email.clone()),
+        password: Some(credentials.password.clone()),
+        ..Default::default()
+    };
+
+    if let Err(errors) = validate_data(&validation_data, &messages) {
         let msg = messages.get_message(Namespace::Auth, "login.invalid_credentials");
         return Ok(handle_validation_error(errors, &msg));
     }

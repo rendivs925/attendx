@@ -2,7 +2,7 @@ use crate::services::app_service::AppService;
 use actix_web::web;
 
 use super::{
-    auth_routes::configure_auth_routes,
+    attendance_routes::configure_attendance_routes, auth_routes::configure_auth_routes,
     organization_member_routes::configure_organization_member_routes,
     organization_routes::configure_organization_routes, user_routes::configure_user_routes,
 };
@@ -22,10 +22,12 @@ impl AppRouter {
         let org_service = web::Data::new(self.app_service.organization_service.clone());
         let org_member_service =
             web::Data::new(self.app_service.organization_member_service.clone());
+        let attendance_service = web::Data::new(self.app_service.attendance_service.clone());
 
         configure_user_routes(cfg, user_service.clone());
         configure_auth_routes(cfg, user_service);
         configure_organization_routes(cfg, org_service);
         configure_organization_member_routes(cfg, org_member_service);
+        configure_attendance_routes(cfg, attendance_service);
     }
 }

@@ -1,20 +1,18 @@
 use crate::{
     config::database::Database,
     repositories::{
-        // attendance_repository::AttendanceRepository,
-        organization_repository::OrganizationRepository,
-        user_repository::UserRepository,
+        attendance_repository::AttendanceRepository,
+        organization_member_repository::OrganizationMemberRepository,
+        organization_repository::OrganizationRepository, user_repository::UserRepository,
     },
 };
 use std::sync::Arc;
-
-use super::organization_member_repository::OrganizationMemberRepository;
 
 pub struct AppRepository {
     pub user_repository: Arc<UserRepository>,
     pub organization_repository: Arc<OrganizationRepository>,
     pub organization_member_repository: Arc<OrganizationMemberRepository>,
-    // pub attendance_repository: Arc<AttendanceRepository>,
+    pub attendance_repository: Arc<AttendanceRepository>,
 }
 
 impl AppRepository {
@@ -31,15 +29,15 @@ impl AppRepository {
             .await
             .expect("Failed to initialize OrganizationMemberRepository");
 
-        // let attendance_repository = AttendanceRepository::new(db.clone())
-        //     .await
-        //     .expect("❌ Failed to initialize AttendanceRepository");
+        let attendance_repository = AttendanceRepository::new(db.clone())
+            .await
+            .expect("Failed to initialize AttendanceRepository");
 
         Self {
             user_repository: Arc::new(user_repository),
             organization_repository: Arc::new(organization_repository),
             organization_member_repository: Arc::new(organization_member_repository),
-            // attendance_repository: Arc::new(attendance_repository),
+            attendance_repository: Arc::new(attendance_repository),
         }
     }
 }

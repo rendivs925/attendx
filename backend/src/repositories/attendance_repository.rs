@@ -30,6 +30,11 @@ impl AttendanceRepository {
         self.collection.find_one(filter).await
     }
 
+    pub async fn get_all_attendances(&self) -> Result<Vec<Attendance>> {
+        let cursor = self.collection.find(doc! {}).await?;
+        cursor.try_collect().await
+    }
+
     pub async fn get_all_attendances_for_user_in_org(
         &self,
         user_id: &ObjectId,

@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct ErrorDetails {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct ApiResponse<T> {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
