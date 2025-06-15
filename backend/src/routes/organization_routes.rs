@@ -1,5 +1,5 @@
 use crate::config::cors::configure_cors;
-use crate::handlers::organization::organization_handler::{
+use crate::handlers::rest::organization::organization_handler::{
     create_organization_handler, delete_organization_handler, get_all_organizations_handler,
     get_organization_handler, update_organization_handler,
 };

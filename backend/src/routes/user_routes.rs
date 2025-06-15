@@ -1,5 +1,5 @@
 use crate::{
-    handlers::user::user_handler::{
+    handlers::rest::user::user_handler::{
         delete_user_handler, get_all_users_handler, get_user_handler, update_user_handler,
     },
     services::user_service::UserService,

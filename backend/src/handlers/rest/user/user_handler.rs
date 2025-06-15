@@ -8,6 +8,7 @@ use crate::{
     },
 };
 use actix_web::{HttpRequest, HttpResponse, web};
+use shared::prelude::*;
 use shared::types::responses::api_response::ApiResponse;
 use shared::{
     types::requests::auth::validation_request::ValidationRequest,

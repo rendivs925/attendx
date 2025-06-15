@@ -1,11 +1,12 @@
+use crate::prelude::*;
 use crate::utils::{
-    locale_utils::{Messages, Namespace},
+    locale_utils::Namespace,
     validation_utils::{add_error, format_error_message},
 };
 use validator::ValidationError;
 
 pub fn validate_password_confirmation(
-    messages: &Messages,
+    messages: &dyn MessageLookup,
     password: &str,
     password_confirmation: Option<&str>,
 ) -> Result<(), ValidationError> {

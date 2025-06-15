@@ -19,6 +19,7 @@
     "not_found": "Achtung nicht gefunden.",
     "success": "Achtung Rekord erfolgreich abgeholt."
   },
+  "invalid_id": "Der angegebene Ausweis ist ungültig.",
   "not_checked_in_yet": "Sie haben heute noch nicht nachgesehen.",
   "update": {
     "not_found": "Achtung-Datensatz, um nicht gefunden zu aktualisieren.",

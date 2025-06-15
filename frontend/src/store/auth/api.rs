@@ -15,6 +15,7 @@ pub struct RegisterPayload {
     pub name: String,
     pub email: String,
     pub password: String,
+    pub password_confirmation: String,
 }
 
 #[derive(Deserialize, Debug)]

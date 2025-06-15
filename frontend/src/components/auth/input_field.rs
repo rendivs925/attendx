@@ -25,7 +25,7 @@ pub fn InputField(
                 id=id
                 type=input_type
                 placeholder=placeholder
-                class="input input-bordered w-full"
+                class="input"
                 node_ref=node_ref
                 autocomplete=autocomplete.unwrap_or("")
                 required=required.unwrap_or(false)

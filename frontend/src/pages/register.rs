@@ -1,11 +1,9 @@
-use leptos::prelude::*;
-
 use crate::components::auth::{
     auth_form_container::AuthFormContainer, auth_redirect_text::AuthRedirectText,
     google_auth_button::GoogleAuthButton, input_field::InputField,
 };
-use crate::hooks::use_register_form::RegisterFormState;
-use crate::hooks::use_register_form::use_register_form;
+use crate::hooks::use_register_form::{RegisterFormState, use_register_form};
+use leptos::prelude::*;
 
 #[component]
 pub fn Register() -> impl IntoView {
@@ -13,6 +11,7 @@ pub fn Register() -> impl IntoView {
         name,
         email,
         password,
+        password_confirmation,
         error,
         on_submit,
     } = use_register_form();
@@ -50,6 +49,16 @@ pub fn Register() -> impl IntoView {
                     autocomplete="new-password"
                     required=true
                     node_ref=password
+                    errors=error
+                />
+                <InputField
+                    id="password_confirmation"
+                    label="Confirm Password"
+                    input_type="password"
+                    placeholder="Retype your password"
+                    autocomplete="new-password"
+                    required=true
+                    node_ref=password_confirmation
                     errors=error
                 />
                 <div class="form-control pt-2">

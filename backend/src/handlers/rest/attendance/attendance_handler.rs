@@ -3,6 +3,7 @@ use crate::{
     utils::{http_utils::handle_internal_error, locale_utils::get_lang},
 };
 use actix_web::{HttpRequest, HttpResponse, web};
+use shared::prelude::*;
 use shared::{
     types::{
         requests::attendance::{

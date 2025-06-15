@@ -22,9 +22,9 @@ pub fn App() -> impl IntoView {
     provide_context(auth);
 
     view! {
-        <Html attr:lang="en" attr:dir="ltr" attr:data-theme="light" />
+        <Html attr:lang="en" attr:dir="ltr" attr:data-theme="dark" />
 
-        <Title text="Welcome to Leptos CSR" />
+        <Title text="Welcome to Attendx" />
 
         <Meta charset="UTF-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1.0" />

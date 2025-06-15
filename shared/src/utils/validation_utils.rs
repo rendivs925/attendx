@@ -4,16 +4,17 @@ use std::collections::HashMap;
 use validator::{ValidationError, ValidationErrors};
 
 use crate::{
+    prelude::MessageLookup,
     types::requests::auth::validation_request::ValidationRequest,
-    utils::locale_utils::Messages,
     validations::{
         email::validate_email, name::validate_name, password::validate_password,
         password_confirmation::validate_password_confirmation,
     },
 };
 
-pub type ValidatorFn =
-    Box<dyn Fn(&Messages, &str, Option<&str>) -> Result<(), ValidationError> + Send + Sync>;
+pub type ValidatorFn = Box<
+    dyn Fn(&dyn MessageLookup, &str, Option<&str>) -> Result<(), ValidationError> + Send + Sync,
+>;
 
 pub struct FieldValidation<'a> {
     pub field_name: &'static str,
@@ -24,14 +25,14 @@ pub struct FieldValidation<'a> {
 
 fn into_validator<F>(f: F) -> ValidatorFn
 where
-    F: Fn(&Messages, &str) -> Result<(), ValidationError> + Send + Sync + 'static,
+    F: Fn(&dyn MessageLookup, &str) -> Result<(), ValidationError> + Send + Sync + 'static,
 {
     Box::new(move |messages, value, _| f(messages, value))
 }
 
 pub fn validate_fields(
     fields: Vec<FieldValidation>,
-    messages: &Messages,
+    messages: &dyn MessageLookup,
 ) -> Result<(), ValidationErrors> {
     let errors = std::sync::Mutex::new(ValidationErrors::new());
 
@@ -92,7 +93,7 @@ pub fn format_error_message(msg: &str) -> String {
 
 pub fn validate_data(
     data: &ValidationRequest,
-    messages: &Messages,
+    messages: &dyn MessageLookup,
 ) -> Result<(), ValidationErrors> {
     let mut fields = Vec::new();
 

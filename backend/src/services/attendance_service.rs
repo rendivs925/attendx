@@ -1,5 +1,6 @@
 use bson::{DateTime, oid::ObjectId};
 use mongodb::bson::to_document;
+use shared::prelude::*;
 use shared::{
     models::attendance_model::Attendance,
     types::{
@@ -9,7 +10,7 @@ use shared::{
         },
         responses::attendance_response::AttendanceResponse,
     },
-    utils::locale_utils::{Messages, Namespace},
+    utils::locale_utils::Namespace,
 };
 use std::fmt;
 use std::{str::FromStr, sync::Arc};
@@ -25,7 +26,7 @@ pub enum AttendanceServiceError {
 }
 
 impl AttendanceServiceError {
-    pub fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &dyn MessageLookup) -> String {
         match self {
             AttendanceServiceError::NotFound => {
                 messages.get_message(Namespace::Attendance, "fetch.not_found")

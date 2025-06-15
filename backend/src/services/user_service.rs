@@ -13,7 +13,7 @@ use shared::{
     utils::locale_utils::Namespace,
 };
 
-use shared::utils::locale_utils::Messages;
+use shared::prelude::*;
 use std::sync::Arc;
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub enum UserServiceError {
 }
 
 impl UserServiceError {
-    pub fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &dyn MessageLookup) -> String {
         match self {
             UserServiceError::NotFound => messages.get_message(Namespace::User, "fetch.not_found"),
             UserServiceError::InvalidCredentials => {

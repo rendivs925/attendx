@@ -1,9 +1,19 @@
 {
   "create": {
-    "duplicate": "Anggota sudah ada dalam organisasi ini."
+    "duplicate_email": "Sebuah organisasi dengan email ini sudah ada.",
+    "success": "Organisasi dibuat dengan sukses."
   },
-  "db_error": "Terjadi galat basis data internal.",
+  "delete": {
+    "not_found": "Organisasi untuk menghapus tidak ditemukan.",
+    "success": "Organisasi dihapus dengan sukses."
+  },
   "fetch": {
-    "not_found": "Anggota organisasi tidak ditemukan."
+    "all_success": "Semua organisasi berhasil ditangkap.",
+    "not_found": "Organisasi tidak ditemukan.",
+    "success": "Organisasi berhasil diambil."
+  },
+  "update": {
+    "not_found": "Organisasi untuk memperbarui tidak ditemukan.",
+    "success": "Organisasi yang diperbarui berhasil."
   }
 }

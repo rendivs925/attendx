@@ -2,13 +2,14 @@ use crate::{
     repositories::organization_repository::OrganizationRepository, utils::auth_utils::hash_password,
 };
 use log::error;
+use shared::prelude::*;
 use shared::{
     models::organization_model::Organization,
     types::{
         requests::organization::register_organization_request::RegisterOrganizationRequest,
         responses::organization_response::OrganizationResponse,
     },
-    utils::locale_utils::{Messages, Namespace},
+    utils::locale_utils::Namespace,
 };
 use std::sync::Arc;
 
@@ -23,7 +24,7 @@ pub enum OrganizationServiceError {
 }
 
 impl OrganizationServiceError {
-    pub fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &dyn MessageLookup) -> String {
         match self {
             OrganizationServiceError::NotFound => {
                 messages.get_message(Namespace::Organization, "fetch.not_found")

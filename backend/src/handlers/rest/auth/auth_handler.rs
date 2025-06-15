@@ -1,5 +1,6 @@
 use actix_web::{HttpRequest, HttpResponse, web};
 use log::info;
+use shared::prelude::*;
 use shared::types::requests::auth::login_request::LoginRequest;
 use shared::types::requests::auth::register_request::RegisterRequest;
 use shared::types::responses::api_response::ApiResponse;

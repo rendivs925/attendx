@@ -1,10 +1,10 @@
 use crate::config::cors::configure_cors;
-use crate::handlers::attendance::attendance_handler::{
+use crate::handlers::rest::attendance::attendance_handler::{
     create_attendance_handler, delete_attendance_handler, get_all_attendances_handler,
     get_attendance_handler, update_attendance_handler,
 };
+use crate::handlers::ws::attendance_ws::attendance_ws_handler;
 use crate::services::attendance_service::AttendanceService;
-use crate::ws::handlers::attendance_ws::attendance_ws_handler;
 use actix_web::web;
 use std::sync::Arc;
 

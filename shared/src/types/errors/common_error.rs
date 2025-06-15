@@ -1,4 +1,5 @@
-use crate::utils::locale_utils::{Messages, Namespace};
+use crate::prelude::*;
+use crate::utils::locale_utils::Namespace;
 
 #[derive(Debug)]
 pub enum CommonError {
@@ -11,7 +12,7 @@ pub enum CommonError {
 }
 
 impl CommonError {
-    pub fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &dyn MessageLookup) -> String {
         match self {
             CommonError::NotFound => messages.get_message(Namespace::Common, "not_found"),
             CommonError::InvalidData => messages.get_message(Namespace::Common, "invalid_data"),

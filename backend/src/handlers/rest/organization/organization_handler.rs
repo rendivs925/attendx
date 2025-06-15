@@ -1,4 +1,5 @@
 use actix_web::{HttpRequest, HttpResponse, web};
+use shared::prelude::*;
 use std::sync::Arc;
 
 use shared::{

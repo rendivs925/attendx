@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
 use crate::repositories::organization_member_repository::OrganizationMemberRepository;
+use shared::prelude::*;
 
 use shared::models::organization_member_model::OrganizationMember;
 use shared::types::requests::organization_member::register_organization_member_request::RegisterOrganizationMemberRequest;
 use shared::types::requests::organization_member::update_organization_member_request::UpdateOrganizationMemberRequest;
 use shared::types::responses::organization_member_response::OrganizationMemberResponse;
-use shared::utils::locale_utils::{Messages, Namespace};
+use shared::utils::locale_utils::Namespace;
 
 use mongodb::bson::to_document;
 
@@ -18,7 +19,7 @@ pub enum OrganizationMemberServiceError {
 }
 
 impl OrganizationMemberServiceError {
-    pub fn to_message(&self, messages: &Messages) -> String {
+    pub fn to_message(&self, messages: &dyn MessageLookup) -> String {
         match self {
             OrganizationMemberServiceError::NotFound => {
                 messages.get_message(Namespace::OrganizationMember, "fetch.not_found")

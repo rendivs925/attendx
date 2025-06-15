@@ -1,9 +1,10 @@
+use crate::prelude::*;
 use email_address::EmailAddress;
 use rayon::prelude::*;
 use validator::ValidationError;
 
 use crate::utils::{
-    locale_utils::{Messages, Namespace},
+    locale_utils::Namespace,
     validation_utils::{add_error, format_error_message},
 };
 
@@ -12,7 +13,7 @@ const MAX_EMAIL_LENGTH: usize = 254;
 const MIN_DOMAIN_SEGMENT_LENGTH: usize = 2;
 const MIN_TLD_LENGTH: usize = 2;
 
-fn has_min_length(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_min_length(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let length = email.len();
     if length < MIN_EMAIL_LENGTH {
         return Err(messages.get_message(Namespace::Validation, "email.too_short"));
@@ -20,7 +21,7 @@ fn has_min_length(email: &str, messages: &Messages) -> Result<(), String> {
     Ok(())
 }
 
-fn has_max_length(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_max_length(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let length = email.len();
     if length > MAX_EMAIL_LENGTH {
         return Err(messages.get_message(Namespace::Validation, "email.too_long"));
@@ -28,7 +29,7 @@ fn has_max_length(email: &str, messages: &Messages) -> Result<(), String> {
     Ok(())
 }
 
-fn has_at_and_dot(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_at_and_dot(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let has_at = email.contains('@');
     let has_dot = email.contains('.');
     if !has_at || !has_dot {
@@ -47,7 +48,7 @@ fn has_at_and_dot(email: &str, messages: &Messages) -> Result<(), String> {
     }
 }
 
-fn is_at_before_dot(email: &str, messages: &Messages) -> Result<(), String> {
+fn is_at_before_dot(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if let (Some(at_index), Some(dot_index)) = (email.find('@'), email.rfind('.')) {
         if at_index >= dot_index {
             Err(messages.get_message(Namespace::Validation, "email.at_before_dot"))
@@ -59,7 +60,7 @@ fn is_at_before_dot(email: &str, messages: &Messages) -> Result<(), String> {
     }
 }
 
-fn has_no_invalid_chars(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_no_invalid_chars(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let has_invalid = email.chars().any(|c| c == ' ' || !c.is_ascii());
     if has_invalid {
         Err(messages.get_message(Namespace::Validation, "email.invalid_chars"))
@@ -68,7 +69,7 @@ fn has_no_invalid_chars(email: &str, messages: &Messages) -> Result<(), String> 
     }
 }
 
-fn has_no_consecutive_dots(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_no_consecutive_dots(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let has_consecutive = email.contains("..");
     if has_consecutive {
         Err(messages.get_message(Namespace::Validation, "email.consecutive_dots"))
@@ -77,7 +78,7 @@ fn has_no_consecutive_dots(email: &str, messages: &Messages) -> Result<(), Strin
     }
 }
 
-fn has_no_leading_or_trailing_dot(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_no_leading_or_trailing_dot(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let starts_with_dot = email.starts_with('.');
     let ends_with_dot = email.ends_with('.');
     if starts_with_dot || ends_with_dot {
@@ -87,7 +88,7 @@ fn has_no_leading_or_trailing_dot(email: &str, messages: &Messages) -> Result<()
     }
 }
 
-fn domain_starts_without_dot(email: &str, messages: &Messages) -> Result<(), String> {
+fn domain_starts_without_dot(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if let Some(domain) = get_domain(email) {
         if domain.starts_with('.') {
             return Err(messages.get_message(Namespace::Validation, "email.domain_starts_with_dot"));
@@ -96,7 +97,7 @@ fn domain_starts_without_dot(email: &str, messages: &Messages) -> Result<(), Str
     Ok(())
 }
 
-fn domain_exists(email: &str, messages: &Messages) -> Result<(), String> {
+fn domain_exists(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if get_domain(email).is_none() {
         Err(messages.get_message(Namespace::Validation, "email.missing_domain"))
     } else {
@@ -104,7 +105,7 @@ fn domain_exists(email: &str, messages: &Messages) -> Result<(), String> {
     }
 }
 
-fn is_structure_valid_domain(email: &str, messages: &Messages) -> Result<(), String> {
+fn is_structure_valid_domain(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if let Some(domain) = get_domain(email) {
         let has_dot = domain.contains('.');
         let has_space = domain.contains(' ');
@@ -116,7 +117,10 @@ fn is_structure_valid_domain(email: &str, messages: &Messages) -> Result<(), Str
     Ok(())
 }
 
-fn has_valid_domain_segment_length(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_valid_domain_segment_length(
+    email: &str,
+    messages: &dyn MessageLookup,
+) -> Result<(), String> {
     if let Some(domain) = get_domain(email) {
         if let Some(first_dot_index) = domain.find('.') {
             if first_dot_index < MIN_DOMAIN_SEGMENT_LENGTH {
@@ -129,7 +133,7 @@ fn has_valid_domain_segment_length(email: &str, messages: &Messages) -> Result<(
     Ok(())
 }
 
-fn has_valid_tld_format(email: &str, messages: &Messages) -> Result<(), String> {
+fn has_valid_tld_format(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if let Some(domain) = get_domain(email) {
         if let Some(last_dot_index) = domain.rfind('.') {
             let tld = &domain[last_dot_index + 1..];
@@ -143,7 +147,7 @@ fn has_valid_tld_format(email: &str, messages: &Messages) -> Result<(), String> 
     Ok(())
 }
 
-fn is_overall_format_valid(email: &str, messages: &Messages) -> Result<(), String> {
+fn is_overall_format_valid(email: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if !EmailAddress::is_valid(email) {
         Err(messages.get_message(Namespace::Validation, "email.invalid"))
     } else {
@@ -155,7 +159,7 @@ fn get_domain(email: &str) -> Option<&str> {
     email.split('@').nth(1)
 }
 
-pub fn validate_email(messages: &Messages, email: &str) -> Result<(), ValidationError> {
+pub fn validate_email(messages: &dyn MessageLookup, email: &str) -> Result<(), ValidationError> {
     let validations = vec![
         has_min_length,
         has_max_length,

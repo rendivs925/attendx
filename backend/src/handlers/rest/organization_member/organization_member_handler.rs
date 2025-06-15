@@ -1,5 +1,6 @@
 use actix_web::{HttpRequest, HttpResponse, web};
 use log::{info, warn};
+use shared::prelude::*;
 use std::sync::Arc;
 
 use shared::{

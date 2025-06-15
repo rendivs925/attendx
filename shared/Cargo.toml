@@ -14,4 +14,7 @@ strum = { version = "0.26", features = ["derive"] }
 strum_macros = "0.26"
 bson = "2.15.0"
 log = "0.4.27"
+gloo-net = "0.6.0"
+leptos = "0.8.2"
+thiserror = "2.0.12"
 

@@ -1,15 +1,16 @@
+use crate::prelude::*;
 use rayon::prelude::*;
 use validator::ValidationError;
 
 use crate::utils::{
-    locale_utils::{Messages, Namespace},
+    locale_utils::Namespace,
     validation_utils::{add_error, format_error_message},
 };
 
 const MIN_PASSWORD_LENGTH: usize = 8;
 const MAX_PASSWORD_LENGTH: usize = 128;
 
-fn has_min_length(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_min_length(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let length = password.len();
     if length < MIN_PASSWORD_LENGTH {
         return Err(messages.get_message(Namespace::Validation, "password.too_short"));
@@ -17,7 +18,7 @@ fn has_min_length(password: &str, messages: &Messages) -> Result<(), String> {
     Ok(())
 }
 
-fn has_max_length(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_max_length(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     let length = password.len();
     if length > MAX_PASSWORD_LENGTH {
         return Err(messages.get_message(Namespace::Validation, "password.too_long"));
@@ -25,42 +26,45 @@ fn has_max_length(password: &str, messages: &Messages) -> Result<(), String> {
     Ok(())
 }
 
-fn has_no_space(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_no_space(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if password.contains(' ') {
         return Err(messages.get_message(Namespace::Validation, "password.contains_space"));
     }
     Ok(())
 }
 
-fn has_uppercase(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_uppercase(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_uppercase()) {
         return Err(messages.get_message(Namespace::Validation, "password.missing_uppercase"));
     }
     Ok(())
 }
 
-fn has_lowercase(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_lowercase(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_lowercase()) {
         return Err(messages.get_message(Namespace::Validation, "password.missing_lowercase"));
     }
     Ok(())
 }
 
-fn has_digit(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_digit(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if !password.chars().any(|char| char.is_ascii_digit()) {
         return Err(messages.get_message(Namespace::Validation, "password.missing_digit"));
     }
     Ok(())
 }
 
-fn has_special_char(password: &str, messages: &Messages) -> Result<(), String> {
+fn has_special_char(password: &str, messages: &dyn MessageLookup) -> Result<(), String> {
     if !password.chars().any(|char| !char.is_alphanumeric()) {
         return Err(messages.get_message(Namespace::Validation, "password.missing_special_char"));
     }
     Ok(())
 }
 
-pub fn validate_password(messages: &Messages, password: &str) -> Result<(), ValidationError> {
+pub fn validate_password(
+    messages: &dyn MessageLookup,
+    password: &str,
+) -> Result<(), ValidationError> {
     let validations = vec![
         has_min_length,
         has_max_length,

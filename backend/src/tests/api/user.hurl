@@ -23,7 +23,7 @@ Accept-Language: en
 }
 
 GET http://localhost:8000/users/all
-Accept-Language: en
+Accept-Language: ja
 
 GET http://localhost:8000/users/h1@gmail.com
 Accept-Language: id

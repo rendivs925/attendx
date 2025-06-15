@@ -1,9 +1,7 @@
 use log::warn;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::fmt;
-use std::fs;
-use std::path::Path;
+use std::{collections::HashMap, fmt, fs, path::Path};
+use thiserror::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Lang {
@@ -19,7 +17,6 @@ impl Lang {
             "id" => Self::Id,
             "de" => Self::De,
             "ja" => Self::Ja,
-            "en" => Self::En,
             _ => Self::En,
         }
     }
@@ -27,34 +24,16 @@ impl Lang {
 
 impl fmt::Display for Lang {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Lang::En => write!(f, "en"),
-            Lang::Id => write!(f, "id"),
-            Lang::De => write!(f, "de"),
-            Lang::Ja => write!(f, "ja"),
-        }
-    }
-}
-
-fn load_message_file(lang: Lang, namespace: &str) -> Value {
-    let lang_folder = lang.to_string();
-
-    let file_path = Path::new("./shared/locales")
-        .join(lang_folder)
-        .join(format!("{namespace}.json"));
-
-    match fs::read_to_string(&file_path) {
-        Ok(content) => match serde_json::from_str(&content) {
-            Ok(json) => json,
-            Err(err) => {
-                eprintln!("[ERROR] Failed to parse JSON from {:?}: {}", file_path, err);
-                Value::Null
+        write!(
+            f,
+            "{}",
+            match self {
+                Lang::En => "en",
+                Lang::Id => "id",
+                Lang::De => "de",
+                Lang::Ja => "ja",
             }
-        },
-        Err(err) => {
-            eprintln!("[ERROR] Failed to read file {:?}: {}", file_path, err);
-            Value::Null
-        }
+        )
     }
 }
 
@@ -71,124 +50,165 @@ pub enum Namespace {
 
 impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Namespace::Validation => write!(f, "validation"),
-            Namespace::User => write!(f, "user"),
-            Namespace::Auth => write!(f, "auth"),
-            Namespace::Common => write!(f, "common"),
-            Namespace::Organization => write!(f, "organization"),
-            Namespace::Attendance => write!(f, "attendance"),
-            Namespace::OrganizationMember => write!(f, "organization_member"),
-        }
+        write!(
+            f,
+            "{}",
+            match self {
+                Namespace::Validation => "validation",
+                Namespace::User => "user",
+                Namespace::Auth => "auth",
+                Namespace::Common => "common",
+                Namespace::Organization => "organization",
+                Namespace::Attendance => "attendance",
+                Namespace::OrganizationMember => "organization_member",
+            }
+        )
     }
 }
 
-#[derive(Debug)]
-pub struct Messages {
-    pub namespaces: HashMap<Namespace, Value>,
-}
-
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum MessageError {
-    MissingNamespace { namespace: Namespace },
+    #[error("Missing namespace '{0}'")]
+    MissingNamespace(Namespace),
+
+    #[error("Missing key '{path}' in namespace '{namespace}'")]
     MissingKey { namespace: Namespace, path: String },
+
+    #[error("Expected string at '{path}' in namespace '{namespace}', got non-string")]
     InvalidType { namespace: Namespace, path: String },
 }
 
-impl fmt::Display for MessageError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            MessageError::MissingNamespace { namespace } => {
-                write!(
-                    f,
-                    "Messages for namespace '{:?}' not loaded or found",
-                    namespace
-                )
-            }
-            MessageError::MissingKey { namespace, path } => {
-                write!(f, "Missing message in {:?} at path '{}'", namespace, path)
-            }
-            MessageError::InvalidType { namespace, path } => {
-                write!(
-                    f,
-                    "Expected string at {:?} path '{}', but found different type",
-                    namespace, path
-                )
-            }
+fn default_namespaces() -> [Namespace; 7] {
+    [
+        Namespace::User,
+        Namespace::Validation,
+        Namespace::Auth,
+        Namespace::Common,
+        Namespace::Organization,
+        Namespace::Attendance,
+        Namespace::OrganizationMember,
+    ]
+}
+
+fn load_fs(lang: Lang, ns: &Namespace) -> Value {
+    let path = Path::new("./shared/locales")
+        .join(lang.to_string())
+        .join(format!("{ns}.json"));
+    match fs::read_to_string(&path) {
+        Ok(text) => serde_json::from_str(&text).unwrap_or_else(|e| {
+            eprintln!("[ERROR] JSON parse failed at {:?}: {e}", path);
+            Value::Null
+        }),
+        Err(e) => {
+            eprintln!("[ERROR] File read failed at {:?}: {e}", path);
+            Value::Null
         }
     }
 }
 
-impl std::error::Error for MessageError {}
-
-impl Messages {
-    pub fn new(lang: Lang) -> Self {
-        let mut namespaces = HashMap::new();
-
-        let namespaces_to_load = [
-            Namespace::User,
-            Namespace::Validation,
-            Namespace::Auth,
-            Namespace::Common,
-            Namespace::Organization,
-            Namespace::Attendance,
-            Namespace::OrganizationMember,
-        ];
-
-        for &ns in &namespaces_to_load {
-            let json_value = load_message_file(lang, &ns.to_string());
-            assert!(
-                json_value.is_object(),
-                "Missing or invalid '{}' messages for language '{}'",
-                ns.to_string(),
-                lang.to_string()
-            );
-            namespaces.insert(ns, json_value);
+async fn load_http(lang: Lang, ns: &Namespace) -> Value {
+    let url = format!("http://localhost:3000/locales/{lang}/{ns}.json");
+    match gloo_net::http::Request::get(&url).send().await {
+        Ok(resp) => match resp.text().await {
+            Ok(text) => serde_json::from_str(&text).unwrap_or(Value::Null),
+            Err(e) => {
+                eprintln!("[ERROR] HTTP body read failed: {e}");
+                Value::Null
+            }
+        },
+        Err(e) => {
+            eprintln!("[ERROR] HTTP request failed: {e}");
+            Value::Null
         }
-
-        Self { namespaces }
     }
+}
 
-    pub fn get(&self, namespace: &Namespace, path: &str) -> Option<&Value> {
-        let root = self.namespaces.get(namespace)?;
+pub trait MessageLookup: Sync + Send {
+    fn namespaces(&self) -> &HashMap<Namespace, Value>;
 
-        let mut current = root;
+    fn get(&self, ns: &Namespace, path: &str) -> Option<&Value> {
+        let mut current = self.namespaces().get(ns)?;
         for key in path.split('.') {
             current = current.get(key)?;
         }
         Some(current)
     }
 
-    pub fn get_str(&self, namespace: Namespace, path: &str) -> Result<String, MessageError> {
-        let value = self
-            .get(&namespace, path)
+    fn get_str(&self, ns: Namespace, path: &str) -> Result<String, MessageError> {
+        let val = self
+            .get(&ns, path)
             .ok_or_else(|| MessageError::MissingKey {
-                namespace,
+                namespace: ns,
                 path: path.to_string(),
             })?;
 
-        value
-            .as_str()
-            .map(|s| s.to_string())
+        val.as_str()
+            .map(str::to_string)
             .ok_or_else(|| MessageError::InvalidType {
-                namespace,
+                namespace: ns,
                 path: path.to_string(),
             })
     }
 
-    pub fn get_message(&self, namespace: Namespace, key: &str) -> String {
-        match self.get_str(namespace, key) {
+    fn get_message(&self, ns: Namespace, path: &str) -> String {
+        match self.get_str(ns, path) {
             Ok(msg) => msg,
             Err(e) => {
-                warn!(
-                    "Failed to get message for namespace '{}' and key '{}': {}",
-                    namespace, key, e
-                );
-                format!(
-                    "Error: missing message for namespace '{}' and key '{}'",
-                    namespace, key
-                )
+                warn!("Message fetch failed: {}.{}: {e}", ns, path);
+                format!("Error: missing message for {}.{}", ns, path)
             }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct Messages {
+    namespaces: HashMap<Namespace, Value>,
+}
+
+impl Messages {
+    pub fn new(lang: Lang) -> Self {
+        let mut namespaces = HashMap::new();
+
+        for ns in default_namespaces() {
+            let json = load_fs(lang, &ns);
+            assert!(
+                json.is_object(),
+                "Invalid or missing messages for '{ns}' in '{lang}'"
+            );
+            namespaces.insert(ns, json);
+        }
+
+        Self { namespaces }
+    }
+}
+
+impl MessageLookup for Messages {
+    fn namespaces(&self) -> &HashMap<Namespace, Value> {
+        &self.namespaces
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MessagesHttp {
+    namespaces: HashMap<Namespace, Value>,
+}
+
+impl MessagesHttp {
+    pub async fn new(lang: Lang) -> Self {
+        let mut namespaces = HashMap::new();
+
+        for ns in default_namespaces() {
+            let json = load_http(lang, &ns).await;
+            namespaces.insert(ns, json);
+        }
+
+        Self { namespaces }
+    }
+}
+
+impl MessageLookup for MessagesHttp {
+    fn namespaces(&self) -> &HashMap<Namespace, Value> {
+        &self.namespaces
     }
 }

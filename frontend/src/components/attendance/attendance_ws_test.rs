@@ -1,115 +1,96 @@
-use js_sys::JsString;
+use codee::string::FromToStringCodec;
+use leptos::ev::MouseEvent;
 use leptos::prelude::*;
-use leptos::wasm_bindgen::{JsCast, closure::Closure};
-use leptos::web_sys::{MessageEvent, WebSocket, console};
-use shared::types::ws_types::{AttendanceWsMessage, WsMessage};
+use leptos_use::core::ConnectionReadyState as State;
+use leptos_use::{UseWebSocketReturn, use_websocket};
+use serde_json::json;
+
+#[component]
+pub fn WsButton(
+    label: &'static str,
+    class: &'static str,
+    on_click: Callback<MouseEvent>,
+    disabled: Signal<bool>,
+) -> impl IntoView {
+    view! {
+        <button
+            class=format!("btn {} flex-1", class)
+            on:click=move |ev| on_click.run(ev)
+            disabled=disabled
+        >
+            {label}
+        </button>
+    }
+}
 
 #[component]
 pub fn AttendanceWsTest() -> impl IntoView {
-    let (messages, set_messages) = signal(vec![] as Vec<String>);
-    let (ws_ready, set_ws_ready) = signal(false);
-    let ws = std::rc::Rc::new(std::cell::RefCell::new(None::<WebSocket>));
+    type Msg = String;
 
-    Effect::new({
-        let set_messages = set_messages.clone();
-        let set_ws_ready = set_ws_ready.clone();
-        let ws = ws.clone();
+    let UseWebSocketReturn {
+        ready_state,
+        message,
+        send,
+        open,
+        close,
+        ..
+    } = use_websocket::<Msg, Msg, FromToStringCodec>("ws://localhost:8000/ws/attendance");
 
-        move |_| {
-            console::log_1(&"Attempting to open WebSocket".into());
+    let is_open = Signal::derive(move || ready_state.get() == State::Open);
 
-            let socket = match WebSocket::new("ws://127.0.0.1:8080/ws") {
-                Ok(s) => s,
-                Err(e) => {
-                    console::log_1(&format!("WebSocket creation error: {:?}", e).into());
-                    return;
-                }
-            };
+    let status_text = move || ready_state.get().to_string();
 
-            let onopen_cb = Closure::wrap(Box::new(move || {
-                console::log_1(&"WebSocket opened".into());
-                set_ws_ready.set(true);
-            }) as Box<dyn FnMut()>);
-            socket.set_onopen(Some(onopen_cb.as_ref().unchecked_ref()));
-            onopen_cb.forget();
-
-            let onmessage_cb = {
-                let set_messages = set_messages.clone();
-                Closure::wrap(Box::new(move |e: MessageEvent| {
-                    console::log_1(&"WebSocket message received".into());
-
-                    if let Ok(txt) = e.data().dyn_into::<JsString>() {
-                        let new_msg = txt.as_string().unwrap_or_default();
-                        console::log_1(&format!("Parsed message: {}", new_msg).into());
-                        set_messages.update(|msgs| msgs.push(new_msg.clone()));
-                    } else {
-                        console::log_1(&"Failed to cast message to string".into());
-                    }
-                }) as Box<dyn FnMut(_)>)
-            };
-            socket.set_onmessage(Some(onmessage_cb.as_ref().unchecked_ref()));
-            onmessage_cb.forget();
-
-            let onerror_cb = Closure::wrap(Box::new(move || {
-                console::log_1(&"WebSocket error".into());
-            }) as Box<dyn FnMut()>);
-            socket.set_onerror(Some(onerror_cb.as_ref().unchecked_ref()));
-            onerror_cb.forget();
-
-            let onclose_cb = Closure::wrap(Box::new(move || {
-                console::log_1(&"WebSocket closed".into());
-                set_ws_ready.set(false);
-            }) as Box<dyn FnMut()>);
-            socket.set_onclose(Some(onclose_cb.as_ref().unchecked_ref()));
-            onclose_cb.forget();
-
-            *ws.borrow_mut() = Some(socket);
-        }
-    });
-
-    let send_read_all = {
-        let ws = ws.clone();
-        let ws_ready = ws_ready.clone();
-
-        move |_| {
-            if !ws_ready.get() {
-                console::log_1(&"WebSocket not ready. Cannot send.".into());
-                return;
-            }
-
-            if let Some(socket) = &*ws.borrow() {
-                let msg = WsMessage::Attendance(AttendanceWsMessage::ReadAll);
-                match serde_json::to_string(&msg) {
-                    Ok(msg_text) => {
-                        console::log_1(&format!("Sending message: {}", msg_text).into());
-                        if let Err(e) = socket.send_with_str(&msg_text) {
-                            console::log_1(&format!("Send error: {:?}", e).into());
-                        }
-                    }
-                    Err(e) => {
-                        console::log_1(&format!("Serialization error: {:?}", e).into());
-                    }
-                }
-            } else {
-                console::log_1(&"WebSocket is None.".into());
-            }
-        }
+    let status_class = move || match ready_state.get() {
+        State::Open => "text-success",
+        State::Connecting => "text-warning",
+        State::Closing => "text-error",
+        State::Closed => "text-info",
     };
 
+    let send_read_all = Callback::new(move |_ev: MouseEvent| {
+        let payload = json!({ "type": "ReadAll" }).to_string();
+        send(&payload);
+    });
+
+    let open_cb = Callback::new(move |_ev: MouseEvent| open());
+    let close_cb = Callback::new(move |_ev: MouseEvent| close());
+
     view! {
-        <div>
-            <button on:click=send_read_all class="p-2 bg-blue-500 text-white rounded">
-                "Send ReadAll"
-            </button>
-            <ul class="mt-4 space-y-2">
-                {move || {
-                    messages
-                        .get()
-                        .iter()
-                        .map(|msg| view! { <li class="bg-gray-100 p-2 rounded">{msg.clone()}</li> })
-                        .collect::<Vec<_>>()
-                }}
-            </ul>
+        <div class="p-8 flex flex-col items-center justify-center min-h-screen bg-base-200 text-base-content">
+            <h2 class="text-3xl font-bold mb-6">"WebSocket Test"</h2>
+
+            <div class="card w-96 bg-base-100 shadow-xl p-6 space-y-4">
+                <p class="text-lg">
+                    <span class="font-semibold">"Status: "</span>
+                    <span class=status_class>{status_text}</span>
+                </p>
+
+                <div class="flex space-x-4">
+                    <WsButton
+                        label="Send Message"
+                        class="btn-primary"
+                        on_click=send_read_all
+                        disabled=Signal::derive(move || !is_open.get())
+                    />
+                    <WsButton
+                        label="Open Connection"
+                        class="btn-success"
+                        on_click=open_cb
+                        disabled=Signal::derive(move || is_open.get())
+                    />
+                    <WsButton
+                        label="Close Connection"
+                        class="btn-error"
+                        on_click=close_cb
+                        disabled=Signal::derive(move || !is_open.get())
+                    />
+                </div>
+
+                <p class="text-lg">
+                    <span class="font-semibold">"Received Message: "</span>
+                    <span class="text-accent">{move || format!("{:?}", message.get())}</span>
+                </p>
+            </div>
         </div>
     }
 }

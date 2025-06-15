@@ -19,6 +19,7 @@
     "not_found": "Catatan kehadiran tidak ditemukan.",
     "success": "Catatan kehadiran berhasil diambil."
   },
+  "invalid_id": "ID yang diberikan tidak valid.",
   "not_checked_in_yet": "Anda belum check-in untuk hari ini belum.",
   "update": {
     "not_found": "Catatan kehadiran untuk memperbarui tak ditemukan.",
