@@ -9,6 +9,4 @@ pub enum MemberRole {
     Teacher,
     #[default]
     Student,
-    Parent,
-    Operator,
 }

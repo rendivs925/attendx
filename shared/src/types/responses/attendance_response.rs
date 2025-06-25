@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AttendanceResponse {
     pub id: String,
     pub user_id: String,

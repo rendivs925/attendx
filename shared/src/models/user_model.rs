@@ -1,5 +1,5 @@
 use crate::types::models::user::{
-    global_role::GlobalRole, subscription::SubscriptionPlan, user_status::UserStatus,
+    role::Role, subscription::SubscriptionPlan, user_status::UserStatus,
 };
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
@@ -10,25 +10,15 @@ use std::collections::HashSet;
 pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub _id: Option<ObjectId>,
-
     pub name: String,
-
     pub email: String,
-
     pub password: String,
-
     pub organization_ids: HashSet<ObjectId>,
-
     pub owned_organizations: u32,
-
     pub subscription_plan: SubscriptionPlan,
-
     pub status: UserStatus,
-
-    pub global_role: GlobalRole,
-
+    pub role: Role,
     pub created_at: DateTime<Utc>,
-
     pub updated_at: DateTime<Utc>,
 }
 
@@ -45,7 +35,7 @@ impl Default for User {
             owned_organizations: Default::default(),
             subscription_plan: Default::default(),
             status: Default::default(),
-            global_role: Default::default(),
+            role: Default::default(),
             created_at: now,
             updated_at: now,
         }

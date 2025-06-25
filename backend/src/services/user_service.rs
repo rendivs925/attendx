@@ -36,9 +36,7 @@ impl UserServiceError {
             UserServiceError::DuplicateEmail => {
                 messages.get_message(Namespace::Auth, "register.duplicate")
             }
-            UserServiceError::DbError(_) => {
-                messages.get_message(Namespace::Auth, "register.db_error")
-            }
+            UserServiceError::DbError(_) => messages.get_message(Namespace::Common, "db_error"),
             UserServiceError::JwtGenerationError(_) => {
                 messages.get_message(Namespace::Auth, "auth.jwt_generation_failed")
             }

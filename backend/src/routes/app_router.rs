@@ -24,10 +24,12 @@ impl AppRouter {
             web::Data::new(self.app_service.organization_member_service.clone());
         let attendance_service = web::Data::new(self.app_service.attendance_service.clone());
 
-        configure_user_routes(cfg, user_service.clone());
-        configure_auth_routes(cfg, user_service);
-        configure_organization_routes(cfg, org_service);
-        configure_organization_member_routes(cfg, org_member_service);
-        configure_attendance_routes(cfg, attendance_service);
+        cfg.service(web::scope("/api").configure(|cfg| {
+            configure_user_routes(cfg, user_service.clone());
+            configure_auth_routes(cfg, user_service);
+            configure_organization_routes(cfg, org_service);
+            configure_organization_member_routes(cfg, org_member_service);
+            configure_attendance_routes(cfg, attendance_service);
+        }));
     }
 }

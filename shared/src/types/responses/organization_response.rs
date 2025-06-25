@@ -6,7 +6,7 @@ use crate::{
     types::models::organization::organization_limit::OrganizationLimits,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct OrganizationResponse {
     pub id: String,
     pub name: String,

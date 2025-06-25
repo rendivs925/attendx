@@ -8,4 +8,5 @@ pub mod main_layout;
 pub mod navbar;
 pub mod pricing;
 pub mod privacy;
+pub mod sidebar;
 pub mod terms;

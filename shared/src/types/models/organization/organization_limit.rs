@@ -3,7 +3,7 @@ use validator::Validate;
 
 use crate::types::models::user::subscription::SubscriptionPlan;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Validate)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Validate)]
 pub struct OrganizationLimits {
     pub max_users: u32,
     pub max_attendance_logs: u32,

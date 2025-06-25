@@ -1,8 +1,10 @@
+use crate::pages::dashboard::admin::index::AdminDashboardPage;
 use components::layout::main_layout::MainLayout;
 use leptos::prelude::*;
+use leptos_fetch::QueryClient;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
-use pages::register::Register;
+use pages::auth::register::Register;
 use store::auth::state::AuthStore;
 
 mod components;
@@ -11,12 +13,14 @@ mod hooks;
 mod pages;
 mod store;
 
+use crate::pages::auth::login::Login;
 use crate::pages::home::Home;
-use crate::pages::login::Login;
 
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+
+    QueryClient::new().provide();
 
     let auth = RwSignal::new(AuthStore::default());
     provide_context(auth);
@@ -35,6 +39,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/") view=Home />
                     <Route path=path!("/auth/login") view=Login />
                     <Route path=path!("/auth/register") view=Register />
+                    <Route path=path!("/admin") view=AdminDashboardPage />
                 </ParentRoute>
             </Routes>
         </Router>

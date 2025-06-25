@@ -1,4 +1,5 @@
 use crate::{
+    config::cors::configure_cors,
     handlers::rest::user::user_handler::{
         delete_user_handler, get_all_users_handler, get_user_handler, update_user_handler,
     },
@@ -13,6 +14,7 @@ pub fn configure_user_routes(
 ) {
     cfg.service(
         web::scope("/users")
+            .wrap(configure_cors())
             .app_data(user_service_data)
             .route("/all", web::get().to(get_all_users_handler))
             .route("/{email}", web::get().to(get_user_handler))
