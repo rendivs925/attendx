@@ -1,64 +1,76 @@
-use std::sync::Arc;
-
-use crate::config::database::Database;
-use crate::constants::ORGANIZATION_COL_NAME;
-use bson::Document;
-use futures_util::stream::TryStreamExt;
-use mongodb::bson::{doc, to_document};
-use mongodb::{Collection, error::Result};
 use shared::models::organization_model::Organization;
+use shared::types::requests::organization::update_organization_request::UpdateOrganizationRequest;
+use sqlx::{Error, PgPool};
+use uuid::Uuid;
 
 pub struct OrganizationRepository {
-    collection: Collection<Organization>,
+    pub pool: PgPool,
 }
 
 impl OrganizationRepository {
-    pub async fn new(db: Arc<Database>) -> Result<Self> {
-        let collection = db.collection::<Organization>(&ORGANIZATION_COL_NAME);
-        Ok(Self { collection })
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
     }
 
-    pub async fn create_organization(&self, organization: Organization) -> Result<Organization> {
-        self.collection.insert_one(&organization).await?;
-        Ok(organization)
+    pub async fn create_organization(&self, org: &Organization) -> Result<Organization, Error> {
+        sqlx::query_as::<_, Organization>(
+            "INSERT INTO organizations (id, name, email, logo_url, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *",
+        )
+        .bind(org.id)
+        .bind(&org.name)
+        .bind(&org.email)
+        .bind(&org.logo_url)
+        .bind(org.created_at)
+        .bind(org.updated_at)
+        .fetch_one(&self.pool)
+        .await
     }
 
-    pub async fn find_organization_by_id(&self, org_id: &str) -> Result<Option<Organization>> {
-        self.collection.find_one(doc! { "_id": org_id }).await
+    pub async fn find_organization_by_id(&self, id: Uuid) -> Result<Option<Organization>, Error> {
+        sqlx::query_as::<_, Organization>("SELECT * FROM organizations WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&self.pool)
+            .await
     }
 
-    pub async fn find_organization(
+    pub async fn find_organization_by_email(
         &self,
-        field: &str,
-        value: &str,
-    ) -> Result<Option<Organization>> {
-        let mut filter = Document::new();
-        filter.insert(field, value);
-        self.collection.find_one(filter).await
+        email: &str,
+    ) -> Result<Option<Organization>, Error> {
+        sqlx::query_as::<_, Organization>("SELECT * FROM organizations WHERE email = $1")
+            .bind(email)
+            .fetch_optional(&self.pool)
+            .await
     }
 
-    pub async fn get_all_organizations(&self) -> Result<Vec<Organization>> {
-        let cursor = self.collection.find(doc! {}).await?;
-        let organizations: Vec<Organization> = cursor.try_collect().await?;
-        Ok(organizations)
+    pub async fn get_all_organizations(&self) -> Result<Vec<Organization>, Error> {
+        sqlx::query_as::<_, Organization>("SELECT * FROM organizations")
+            .fetch_all(&self.pool)
+            .await
     }
 
     pub async fn update_organization(
         &self,
-        org_id: &str,
-        organization: &Organization,
-    ) -> Result<Organization> {
-        let update_doc = to_document(organization)?;
-
-        self.collection
-            .update_one(doc! { "_id": org_id }, doc! { "$set": update_doc })
-            .await?;
-
-        Ok(organization.clone())
+        id: Uuid,
+        data: &UpdateOrganizationRequest,
+    ) -> Result<Organization, Error> {
+        sqlx::query_as::<_, Organization>(
+        "UPDATE organizations SET name = $1, logo_url = $2, updated_at = now() WHERE id = $3 RETURNING *",
+    )
+    .bind(&data.name)
+    .bind(&data.logo_url)
+    .bind(id)
+    .fetch_one(&self.pool)
+    .await
     }
 
-    pub async fn delete_organization(&self, org_id: &str) -> Result<()> {
-        self.collection.delete_one(doc! { "_id": org_id }).await?;
+    pub async fn delete_organization(&self, id: Uuid) -> Result<(), Error> {
+        sqlx::query("DELETE FROM organizations WHERE id = $1")
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 }

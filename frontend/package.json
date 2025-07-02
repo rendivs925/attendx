@@ -4,7 +4,6 @@
   "description": "<picture>     <source srcset=\"https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg\" media=\"(prefers-color-scheme: dark)\">     <img src=\"https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg\" alt=\"Leptos Logo\"> </picture>",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx @tailwindcss/cli -i ./style/input.css -o ./style/output.css --minify",
     "watch": "npx @tailwindcss/cli -i ./style/input.css -o ./style/output.css --watch",
     "dev": "npm run watch"
@@ -16,10 +15,13 @@
     "@tailwindcss/cli": "^4.1.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^24.0.8",
     "autoprefixer": "^10.4.21",
     "daisyui": "^5.0.35",
+    "playwright": "^1.53.2",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.6"
   }

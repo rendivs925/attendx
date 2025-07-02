@@ -1,68 +1,37 @@
-use crate::constants::{DB_NAME, MONGODB_URI, USER_COL_NAME};
-use log::info;
-use mongodb::{
-    Client, Collection, IndexModel,
-    bson::doc,
-    error::Error as MongoError,
-    options::{ClientOptions, IndexOptions},
-};
-use shared::models::user_model::User;
+use log::{error, info};
+use sqlx::{Error as SqlxError, PgPool, postgres::PgPoolOptions};
+use std::time::Duration;
 
+use crate::constants::DATABASE_URL;
+
+#[derive(Clone)]
 pub struct Database {
-    pub client: Client,
+    pub pool: PgPool,
 }
 
 impl Database {
-    pub async fn new() -> Result<Self, MongoError> {
-        let client_uri = (*MONGODB_URI).as_str();
-        let client_options = ClientOptions::parse(client_uri).await?;
-        let client = Client::with_options(client_options)?;
-        info!("Connected to MongoDB");
+    pub async fn new() -> Result<Self, SqlxError> {
+        info!(
+            "Attempting to connect to PostgreSQL at {}",
+            DATABASE_URL.as_str()
+        );
 
-        let db = Self { client };
-        db.create_unique_indexes().await?;
-        Ok(db)
-    }
+        let pool = match PgPoolOptions::new()
+            .max_connections(10)
+            .acquire_timeout(Duration::from_secs(5))
+            .connect(DATABASE_URL.as_str())
+            .await
+        {
+            Ok(pool) => {
+                info!("✅ Connected to PostgreSQL (Supabase)");
+                pool
+            }
+            Err(e) => {
+                error!("❌ Failed to connect to PostgreSQL: {}", e);
+                return Err(e);
+            }
+        };
 
-    pub fn collection<T>(&self, name: &str) -> Collection<T>
-    where
-        T: serde::de::DeserializeOwned + serde::Serialize + Unpin + Send + Sync,
-    {
-        self.client.database(&DB_NAME).collection::<T>(name)
-    }
-
-    async fn create_partial_unique_index(
-        &self,
-        collection: &Collection<User>,
-        field: &str,
-    ) -> Result<(), MongoError> {
-        let index = IndexModel::builder()
-            .keys(doc! { field: 1 })
-            .options(
-                IndexOptions::builder()
-                    .unique(true)
-                    .partial_filter_expression(
-                        doc! { field: { "$exists": true, "$type": "string" } },
-                    )
-                    .build(),
-            )
-            .build();
-
-        collection.create_index(index).await?;
-        Ok(())
-    }
-
-    async fn create_unique_indexes(&self) -> Result<(), MongoError> {
-        let collection = self.collection::<User>(&USER_COL_NAME);
-
-        self.create_partial_unique_index(&collection, "email")
-            .await?;
-        self.create_partial_unique_index(&collection, "username")
-            .await?;
-        self.create_partial_unique_index(&collection, "nim").await?;
-        self.create_partial_unique_index(&collection, "nidn")
-            .await?;
-
-        Ok(())
+        Ok(Self { pool })
     }
 }

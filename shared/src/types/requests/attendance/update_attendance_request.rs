@@ -8,10 +8,11 @@ use crate::types::models::attendance::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateAttendanceRequest {
-    pub attendance_type: Option<AttendanceType>,
-    pub status: Option<AttendanceStatus>,
+    pub date: Option<DateTime<Utc>>,
     pub clock_in: Option<DateTime<Utc>>,
     pub clock_out: Option<DateTime<Utc>>,
     pub method: Option<AttendanceMethod>,
+    pub status: Option<AttendanceStatus>,
+    pub attendance_type: Option<AttendanceType>,
     pub location: Option<GeoLocation>,
 }

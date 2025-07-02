@@ -10,13 +10,11 @@ use std::sync::Arc;
 #[shuttle_runtime::main]
 async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     dotenv().ok();
-
     let _ = env_logger::try_init();
 
-    let db = Arc::new(Database::new().await.expect("Failed to init DB"));
+    let db = Arc::new(Database::new().await.expect("Failed to connect to DB"));
 
-    let app_repository = Arc::new(AppRepository::new(db).await);
-
+    let app_repository = Arc::new(AppRepository::new(db));
     let app_service = AppService::new(app_repository).await;
 
     let router = AppRouter::new(Data::new(app_service));

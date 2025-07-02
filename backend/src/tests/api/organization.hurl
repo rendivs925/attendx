@@ -1,5 +1,5 @@
 # Register user with Free plan
-POST http://localhost:8000/auth/register
+POST http://localhost:8000/api/auth/register
 Content-Type: application/json
 Accept-Language: ja
 
@@ -11,7 +11,7 @@ Accept-Language: ja
 }
 
 # Login as User A
-POST http://localhost:8000/auth/login
+POST http://localhost:8000/api/auth/login
 Content-Type: application/json
 Accept-Language: ja
 
@@ -21,7 +21,7 @@ Accept-Language: ja
 }
 
 # Create organization (limits should be inferred from subscription plan)
-POST http://localhost:8000/organizations/new
+POST http://localhost:8000/api/organizations/new
 Content-Type: application/json
 Accept-Language: ja
 Cookie: jwt_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiVXNlciBBIiwiZW1haWwiOiJ1c2VyYUBnbWFpbC5jb20iLCJleHAiOjE3NDg0NDMyMTh9.yjj8ioV3lRklcFETe590yO2W0E_TiTBzkkHSl0TOSIM
@@ -35,7 +35,7 @@ Cookie: jwt_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiVXNlciBBIiwiZ
 }
 
 # Register user with Pro plan
-POST http://localhost:8000/auth/register
+POST http://localhost:8000/api/auth/register
 Content-Type: application/json
 Accept-Language: en
 
@@ -48,7 +48,7 @@ Accept-Language: en
 }
 
 # Login as User B
-POST http://localhost:8000/auth/login
+POST http://localhost:8000/api/auth/login
 Content-Type: application/json
 Accept-Language: en
 
@@ -58,28 +58,28 @@ Accept-Language: en
 }
 
 # Create organization for Pro user
-POST http://localhost:8000/organizations/new
+POST http://localhost:8000/api/organizations/new
 Content-Type: application/json
 Accept-Language: en
 Cookie: jwt_token=<your_token_here>
 
 {
-  "name": "Org Pro Plan",
+  "name": "Org1",
   "email": "orgpro@example.com",
   "logo_url": "jsjsjsj",
   "password": "OrgPass123."
 }
 
 # Get all organizations
-GET http://localhost:8000/organizations/all
-Accept-Language: ja
+GET http://localhost:8000/api/organizations/all
+Accept-Language: en
 
 # Get organization by ID (replace with actual ID)
-GET http://localhost:8000/organizations/64a9d78fbc2a2a2a2a2a2a2a
+GET http://localhost:8000/api/organizations/64a9d78fbc2a2a2a2a2a2a2a
 Accept-Language: en
 
 # Update organization (replace ID)
-PUT http://localhost:8000/organizations/64a9d78fbc2a2a2a2a2a2a2a
+PUT http://localhost:8000/api/organizations/64a9d78fbc2a2a2a2a2a2a2a
 Content-Type: application/json
 Accept-Language: en
 
@@ -90,6 +90,6 @@ Accept-Language: en
 }
 
 # Delete organization (replace ID)
-DELETE http://localhost:8000/organizations/64a9d78fbc2a2a2a2a2a2a2a
+DELETE http://localhost:8000/api/organizations/64a9d78fbc2a2a2a2a2a2a2a
 Accept-Language: en
 

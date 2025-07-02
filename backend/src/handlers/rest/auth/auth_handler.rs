@@ -31,8 +31,7 @@ pub async fn register_user_handler(
     let validation_data = ValidationRequest {
         name: Some(data.name.clone()),
         email: Some(data.email.clone()),
-        password: Some(data.password.clone()),
-        password_confirmation: Some(data.password_confirmation.clone()),
+        ..Default::default()
     };
 
     if let Err(errs) = validate_data(&validation_data, &messages) {
@@ -53,71 +52,71 @@ pub async fn register_user_handler(
     }
 }
 
-pub async fn jwt_login_handler(
-    req: HttpRequest,
-    user_service: web::Data<Arc<UserService>>,
-    credentials: web::Json<LoginRequest>,
-) -> Result<HttpResponse, actix_web::Error> {
-    let lang = get_lang(&req);
-    let messages = Messages::new(lang);
-    let credentials = credentials.into_inner();
+// pub async fn jwt_login_handler(
+//     req: HttpRequest,
+//     user_service: web::Data<Arc<UserService>>,
+//     credentials: web::Json<LoginRequest>,
+// ) -> Result<HttpResponse, actix_web::Error> {
+//     let lang = get_lang(&req);
+//     let messages = Messages::new(lang);
+//     let credentials = credentials.into_inner();
+//
+//     let validation_data = ValidationRequest {
+//         email: Some(credentials.email.clone()),
+//         password: Some(credentials.password.clone()),
+//         ..Default::default()
+//     };
+//
+//     if let Err(errors) = validate_data(&validation_data, &messages) {
+//         let msg = messages.get_message(Namespace::Auth, "login.invalid_credentials");
+//         return Ok(handle_validation_error(errors, &msg));
+//     }
+//
+//     match user_service
+//         .authenticate_user(&credentials.email, &credentials.password)
+//         .await
+//     {
+//         Ok((user, token)) => {
+//             info!("User {} successfully logged in.", &credentials.email);
+//             let cookie = generate_cookie(token);
+//             let response = ApiResponse::success(
+//                 messages.get_message(Namespace::Auth, "login.success"),
+//                 Some(UserResponse::from(user)),
+//             );
+//             Ok(HttpResponse::Ok().cookie(cookie).json(response))
+//         }
+//         Err(UserServiceError::InvalidCredentials | UserServiceError::NotFound) => {
+//             let response = ApiResponse::<()>::error(
+//                 UserServiceError::InvalidCredentials.to_message(&messages),
+//                 None,
+//             );
+//             Ok(HttpResponse::Unauthorized().json(response))
+//         }
+//         Err(e) => {
+//             let response = ApiResponse::<()>::error(e.to_message(&messages), None);
+//             Ok(HttpResponse::InternalServerError().json(response))
+//         }
+//     }
+// }
 
-    let validation_data = ValidationRequest {
-        email: Some(credentials.email.clone()),
-        password: Some(credentials.password.clone()),
-        ..Default::default()
-    };
-
-    if let Err(errors) = validate_data(&validation_data, &messages) {
-        let msg = messages.get_message(Namespace::Auth, "login.invalid_credentials");
-        return Ok(handle_validation_error(errors, &msg));
-    }
-
-    match user_service
-        .authenticate_user(&credentials.email, &credentials.password)
-        .await
-    {
-        Ok((user, token)) => {
-            info!("User {} successfully logged in.", &credentials.email);
-            let cookie = generate_cookie(token);
-            let response = ApiResponse::success(
-                messages.get_message(Namespace::Auth, "login.success"),
-                Some(UserResponse::from(user)),
-            );
-            Ok(HttpResponse::Ok().cookie(cookie).json(response))
-        }
-        Err(UserServiceError::InvalidCredentials | UserServiceError::NotFound) => {
-            let response = ApiResponse::<()>::error(
-                UserServiceError::InvalidCredentials.to_message(&messages),
-                None,
-            );
-            Ok(HttpResponse::Unauthorized().json(response))
-        }
-        Err(e) => {
-            let response = ApiResponse::<()>::error(e.to_message(&messages), None);
-            Ok(HttpResponse::InternalServerError().json(response))
-        }
-    }
-}
-
-pub async fn logout_user_handler(req: HttpRequest) -> HttpResponse {
-    use actix_web::cookie::{Cookie, SameSite, time::Duration};
-
-    let lang = get_lang(&req);
-    let messages = Messages::new(lang);
-
-    let expired = Cookie::build(&*COOKIE_NAME, "")
-        .http_only(true)
-        .secure(true)
-        .same_site(SameSite::None)
-        .path("/")
-        .max_age(Duration::new(0, 0))
-        .finish();
-
-    HttpResponse::Ok()
-        .cookie(expired)
-        .json(ApiResponse::<()>::success(
-            messages.get_message(Namespace::Auth, "logout.success"),
-            None,
-        ))
-}
+// pub async fn logout_user_handler(req: HttpRequest) -> HttpResponse {
+//     use actix_web::cookie::{Cookie, SameSite, time::Duration};
+//
+//     let lang = get_lang(&req);
+//     let messages = Messages::new(lang);
+//
+//     let expired = Cookie::build(&*COOKIE_NAME, "")
+//         .http_only(true)
+//         .secure(true)
+//         .same_site(SameSite::None)
+//         .path("/")
+//         .max_age(Duration::new(0, 0))
+//         .finish();
+//
+//     HttpResponse::Ok()
+//         .cookie(expired)
+//         .json(ApiResponse::<()>::success(
+//             messages.get_message(Namespace::Auth, "logout.success"),
+//             None,
+//         ))
+// }

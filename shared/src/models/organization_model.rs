@@ -1,40 +1,37 @@
-use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::types::models::organization::organization_limit::OrganizationLimits;
-use crate::types::models::user::subscription::SubscriptionPlan;
+#[cfg(feature = "backend")]
+use sqlx::FromRow;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "backend", derive(FromRow))]
 pub struct Organization {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub _id: Option<ObjectId>,
+    pub id: Uuid,
     pub name: String,
     pub email: String,
-    pub owner_id: String,
-    pub password: String,
+    pub owner_id: Uuid,
     pub logo_url: String,
+    pub max_users: i32,
+    pub max_attendance_logs: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-    pub limits: OrganizationLimits,
 }
 
 impl Default for Organization {
     fn default() -> Self {
         let now = Utc::now();
-
-        let default_limits = OrganizationLimits::from_plan(&SubscriptionPlan::Free);
-
         Self {
-            _id: Some(ObjectId::new()),
-            name: String::default(),
-            email: String::default(),
-            owner_id: String::default(),
-            password: String::default(),
-            logo_url: Default::default(),
+            id: Uuid::new_v4(),
+            name: String::new(),
+            email: String::new(),
+            owner_id: Uuid::new_v4(),
+            logo_url: String::new(),
+            max_users: 0,
+            max_attendance_logs: 0,
             created_at: now,
             updated_at: now,
-            limits: default_limits,
         }
     }
 }

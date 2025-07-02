@@ -15,7 +15,7 @@ lazy_env_var!(CLIENT_SECRET);
 lazy_env_var!(REDIRECT_URI);
 lazy_env_var!(JWT_SECRET_KEY);
 lazy_env_var!(COOKIE_NAME);
-lazy_env_var!(MONGODB_URI);
+lazy_env_var!(DATABASE_URL);
 lazy_env_var!(DB_NAME);
 lazy_env_var!(USER_COL_NAME);
 lazy_env_var!(CLASS_COL_NAME);

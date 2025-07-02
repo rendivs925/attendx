@@ -7,9 +7,8 @@ use leptos::task::spawn_local;
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use shared::types::responses::{
-    attendance_response::AttendanceResponse,
-    organization_member_response::OrganizationMemberResponse,
-    organization_response::OrganizationResponse, user_response::UserResponse,
+    attendance_response::AttendanceResponse, organization_response::OrganizationResponse,
+    user_response::UserResponse,
 };
 
 fn api_url(path: &str) -> String {
@@ -44,7 +43,6 @@ pub fn AdminDashboardPage() -> impl IntoView {
     let users = RwSignal::new(Loadable::Loading);
     let orgs = RwSignal::new(Loadable::Loading);
     let attendances = RwSignal::new(Loadable::Loading);
-    let members = RwSignal::new(Loadable::Loading);
 
     spawn_local({
         let users = users.clone();
@@ -76,22 +74,6 @@ pub fn AdminDashboardPage() -> impl IntoView {
                 Ok(data) => Loadable::Loaded(data),
                 Err(e) => Loadable::Error(e.to_string()),
             });
-        }
-    });
-
-    Effect::new(move |_| {
-        if let Loadable::Loaded(org_list) = orgs.get() {
-            if let Some(first_org) = org_list.first() {
-                let members = members.clone();
-                let url = api_url(&format!("/api/organization-members/all/{}", first_org.id));
-                spawn_local(async move {
-                    let res = fetch_list::<OrganizationMemberResponse>(url).await;
-                    members.set(match res {
-                        Ok(data) => Loadable::Loaded(data),
-                        Err(e) => Loadable::Error(e.to_string()),
-                    });
-                });
-            }
         }
     });
 
@@ -128,15 +110,6 @@ pub fn AdminDashboardPage() -> impl IntoView {
                     };
                     view! { <SummaryCard label="Attendances" value=move || att_len /> }.into_any()
                 }}
-                {{
-                    let mem_len = if let Loadable::Loaded(data) = members.get() {
-                        data.len()
-                    } else {
-                        0
-                    };
-                    view! { <SummaryCard label="Members (1st Org)" value=move || mem_len /> }
-                        .into_any()
-                }}
             </div>
 
             <div class="overflow-x-auto mt-6">
@@ -167,7 +140,6 @@ pub fn AdminDashboardPage() -> impl IntoView {
                                                         <td>{u.email}</td>
                                                         <td>{format!("{:?}", u.role)}</td>
                                                         <td>{format!("{:?}", u.status)}</td>
-                                                        <td>{format!("{:?}", u.subscription_plan)}</td>
                                                     </tr>
                                                 }
                                             })

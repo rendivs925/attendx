@@ -1,27 +1,29 @@
-use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+#[cfg(feature = "backend")]
+use sqlx::FromRow;
 
 use crate::types::models::attendance::{
     attendance_method::AttendanceMethod, attendance_status::AttendanceStatus,
-    attendance_type::AttendanceType, geolocation::GeoLocation,
+    attendance_type::AttendanceType,
 };
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "backend", derive(FromRow))]
 pub struct Attendance {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub _id: Option<ObjectId>,
-    pub user_id: ObjectId,
-    pub organization_id: ObjectId,
-    pub attendance_type: AttendanceType,
-    pub status: AttendanceStatus,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub organization_id: Uuid,
     pub clock_in: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub clock_out: Option<DateTime<Utc>>,
+    pub date: DateTime<Utc>,
     pub method: AttendanceMethod,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub location: Option<GeoLocation>,
+    pub status: AttendanceStatus,
+    pub attendance_type: AttendanceType,
+    pub lat: Option<f64>,
+    pub long: Option<f64>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -30,15 +32,17 @@ impl Default for Attendance {
     fn default() -> Self {
         let now = Utc::now();
         Self {
-            _id: Some(ObjectId::new()),
-            user_id: ObjectId::default(),
-            organization_id: ObjectId::default(),
-            attendance_type: AttendanceType::default(),
-            status: AttendanceStatus::default(),
+            id: Uuid::new_v4(),
+            user_id: Uuid::new_v4(),
+            organization_id: Uuid::new_v4(),
             clock_in: None,
             clock_out: None,
+            date: now,
             method: AttendanceMethod::default(),
-            location: None,
+            status: AttendanceStatus::default(),
+            attendance_type: AttendanceType::default(),
+            lat: None,
+            long: None,
             created_at: now,
             updated_at: now,
         }

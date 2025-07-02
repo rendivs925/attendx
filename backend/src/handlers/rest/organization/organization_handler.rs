@@ -1,6 +1,10 @@
 use actix_web::{HttpRequest, HttpResponse, web};
-use shared::prelude::*;
+use shared::{
+    prelude::*,
+    types::requests::organization::update_organization_request::UpdateOrganizationRequest,
+};
 use std::sync::Arc;
+use uuid::Uuid;
 
 use shared::{
     models::organization_model::Organization,
@@ -67,12 +71,15 @@ pub async fn create_organization_handler(
 pub async fn get_organization_handler(
     req: HttpRequest,
     organization_service: web::Data<Arc<OrganizationService>>,
-    org_id: web::Path<String>,
+    org_id: web::Path<Uuid>,
 ) -> HttpResponse {
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    match organization_service.get_organization_by_id(&org_id).await {
+    match organization_service
+        .get_organization_by_id(org_id.into_inner())
+        .await
+    {
         Ok(Some(org)) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_message(Namespace::Organization, "fetch.success"),
             Some(org),
@@ -104,8 +111,8 @@ pub async fn get_all_organizations_handler(
 pub async fn update_organization_handler(
     req: HttpRequest,
     organization_service: web::Data<Arc<OrganizationService>>,
-    org_id: web::Path<String>,
-    organization_json: web::Json<Organization>,
+    org_id: web::Path<Uuid>,
+    organization_json: web::Json<UpdateOrganizationRequest>,
 ) -> HttpResponse {
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
@@ -122,7 +129,7 @@ pub async fn update_organization_handler(
     }
 
     match organization_service
-        .update_organization(&org_id, updated_organization)
+        .update_organization(org_id.into_inner(), &updated_organization)
         .await
     {
         Ok(updated_org) => HttpResponse::Ok().json(ApiResponse::success(
@@ -144,12 +151,15 @@ pub async fn update_organization_handler(
 pub async fn delete_organization_handler(
     req: HttpRequest,
     organization_service: web::Data<Arc<OrganizationService>>,
-    org_id: web::Path<String>,
+    org_id: web::Path<Uuid>,
 ) -> HttpResponse {
     let lang = get_lang(&req);
     let messages = Messages::new(lang);
 
-    match organization_service.delete_organization(&org_id).await {
+    match organization_service
+        .delete_organization(org_id.into_inner())
+        .await
+    {
         Ok(_) => HttpResponse::Ok().json(ApiResponse::success(
             messages.get_message(Namespace::Organization, "delete.success"),
             None::<()>,

@@ -10,10 +10,12 @@ use crate::types::models::attendance::{
 pub struct RegisterAttendanceRequest {
     pub user_id: String,
     pub organization_id: String,
-    pub attendance_type: AttendanceType,
-    pub status: AttendanceStatus,
+    pub date: DateTime<Utc>,
     pub clock_in: Option<DateTime<Utc>>,
     pub clock_out: Option<DateTime<Utc>>,
-    pub method: AttendanceMethod,
-    pub location: Option<GeoLocation>,
+    pub method: Option<AttendanceMethod>,
+    pub status: Option<AttendanceStatus>,
+    pub attendance_type: Option<AttendanceType>,
+    pub lat: Option<f64>,
+    pub long: Option<f64>,
 }

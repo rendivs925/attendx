@@ -1,9 +1,9 @@
-use crate::store::auth::api::{ErrorResponse, LoginResponse, RegisterResponse};
+use crate::store::auth::api::ErrorResponse;
 use crate::store::auth::helpers::{show_error, show_success};
 use crate::store::auth::state::AuthStore;
 use gloo_net::http::Response;
 use leptos::prelude::RwSignal;
-use shared::types::responses::user_response::UserResponse;
+use shared::types::responses::{api_response::ApiResponse, user_response::UserResponse};
 
 pub async fn handle_login_response(auth: &RwSignal<AuthStore>, response: Response) {
     if !response.ok() {
@@ -19,9 +19,13 @@ pub async fn handle_login_response(auth: &RwSignal<AuthStore>, response: Respons
         return;
     }
 
-    match response.json::<LoginResponse<UserResponse>>().await {
+    match response.json::<ApiResponse<UserResponse>>().await {
         Ok(data) => {
-            show_success(auth, data.message, data.data);
+            if let Some(user) = data.data {
+                show_success(auth, data.message, user);
+            } else {
+                show_error(auth, "Missing user data".into());
+            }
         }
         Err(e) => {
             let _ = response.text().await;
@@ -44,9 +48,13 @@ pub async fn handle_register_response(auth: &RwSignal<AuthStore>, response: Resp
         return;
     }
 
-    match response.json::<RegisterResponse<UserResponse>>().await {
+    match response.json::<ApiResponse<UserResponse>>().await {
         Ok(data) => {
-            show_success(auth, data.message, data.data);
+            if let Some(user) = data.data {
+                show_success(auth, data.message, user);
+            } else {
+                show_error(auth, "Missing user data".into());
+            }
         }
         Err(e) => {
             let _ = response.text().await;

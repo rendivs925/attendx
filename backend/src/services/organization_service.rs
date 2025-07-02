@@ -1,8 +1,7 @@
-use crate::{
-    repositories::organization_repository::OrganizationRepository, utils::auth_utils::hash_password,
-};
+use crate::repositories::organization_repository::OrganizationRepository;
 use log::error;
 use shared::prelude::*;
+use shared::types::requests::organization::update_organization_request::UpdateOrganizationRequest;
 use shared::{
     models::organization_model::Organization,
     types::{
@@ -12,6 +11,7 @@ use shared::{
     utils::locale_utils::Namespace,
 };
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub enum OrganizationServiceError {
@@ -20,7 +20,6 @@ pub enum OrganizationServiceError {
     DuplicateEmail,
     DbError(String),
     JwtGenerationError(String),
-    PasswordHashingError(String),
 }
 
 impl OrganizationServiceError {
@@ -40,9 +39,6 @@ impl OrganizationServiceError {
             }
             OrganizationServiceError::JwtGenerationError(_) => {
                 messages.get_message(Namespace::Common, "jwt_generation_failed")
-            }
-            OrganizationServiceError::PasswordHashingError(_) => {
-                messages.get_message(Namespace::Common, "password_hashing_failed")
             }
         }
     }
@@ -65,7 +61,7 @@ impl OrganizationService {
     ) -> Result<OrganizationResponse, OrganizationServiceError> {
         let existing_org = self
             .organization_repository
-            .find_organization("email", &new_organization.email)
+            .find_organization_by_email(&new_organization.email)
             .await
             .map_err(|e| OrganizationServiceError::DbError(e.to_string()))?;
 
@@ -73,25 +69,16 @@ impl OrganizationService {
             return Err(OrganizationServiceError::DuplicateEmail);
         }
 
-        let hashed_password = hash_password(&new_organization.password).map_err(|e| {
-            error!(
-                "Failed to hash password for organization {}: {:?}",
-                new_organization.email, e
-            );
-            OrganizationServiceError::PasswordHashingError(e.to_string())
-        })?;
-
         let organization = Organization {
             name: new_organization.name,
             email: new_organization.email.clone(),
-            password: hashed_password,
             logo_url: new_organization.logo_url,
             ..Default::default()
         };
 
         let created = self
             .organization_repository
-            .create_organization(organization)
+            .create_organization(&organization)
             .await
             .map_err(|e| {
                 error!(
@@ -106,7 +93,7 @@ impl OrganizationService {
 
     pub async fn get_organization_by_id(
         &self,
-        org_id: &str,
+        org_id: Uuid,
     ) -> Result<Option<OrganizationResponse>, OrganizationServiceError> {
         let org = self
             .organization_repository
@@ -131,8 +118,8 @@ impl OrganizationService {
 
     pub async fn update_organization(
         &self,
-        org_id: &str,
-        organization: Organization,
+        org_id: Uuid,
+        organization: &UpdateOrganizationRequest,
     ) -> Result<OrganizationResponse, OrganizationServiceError> {
         let updated = self
             .organization_repository
@@ -143,7 +130,7 @@ impl OrganizationService {
         Ok(OrganizationResponse::from(updated))
     }
 
-    pub async fn delete_organization(&self, org_id: &str) -> Result<(), OrganizationServiceError> {
+    pub async fn delete_organization(&self, org_id: Uuid) -> Result<(), OrganizationServiceError> {
         self.organization_repository
             .delete_organization(org_id)
             .await

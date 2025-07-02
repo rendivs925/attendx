@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-shared = { path = "../shared/" }
+shared = { path = "../shared", features = ["backend"] }
 actix-cors = "0.7.0"
 actix-rt = "2.10.0"
 actix-web = "4.5.1"
@@ -38,4 +38,5 @@ shuttle-runtime = "0.55.0"
 bson = { version = "2.15.0", features = ["chrono"] }
 actix-web-actors = "4.3.1"
 actix = "0.13.5"
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "uuid", "chrono", "json", "macros"] }
 

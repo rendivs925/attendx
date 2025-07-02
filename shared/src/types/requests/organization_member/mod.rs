@@ -1,2 +1,0 @@
-pub mod register_organization_member_request;
-pub mod update_organization_member_request;

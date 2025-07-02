@@ -1,8 +1,8 @@
-use bson::{DateTime, oid::ObjectId};
-use mongodb::bson::to_document;
-use shared::prelude::*;
+use crate::repositories::attendance_repository::AttendanceRepository;
+use chrono::Utc;
 use shared::{
     models::attendance_model::Attendance,
+    prelude::MessageLookup,
     types::{
         requests::attendance::{
             register_attendance_request::RegisterAttendanceRequest,
@@ -12,10 +12,8 @@ use shared::{
     },
     utils::locale_utils::Namespace,
 };
-use std::fmt;
-use std::{str::FromStr, sync::Arc};
-
-use crate::repositories::attendance_repository::AttendanceRepository;
+use std::{fmt, sync::Arc};
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub enum AttendanceServiceError {
@@ -34,8 +32,7 @@ impl AttendanceServiceError {
             AttendanceServiceError::DuplicateAttendance => {
                 messages.get_message(Namespace::Attendance, "create.duplicate")
             }
-            AttendanceServiceError::DbError(e) => {
-                eprintln!("Database error: {}", e);
+            AttendanceServiceError::DbError(_) => {
                 messages.get_message(Namespace::Attendance, "db_error")
             }
             AttendanceServiceError::InvalidId(_) => {
@@ -71,42 +68,44 @@ impl AttendanceService {
         &self,
         request: RegisterAttendanceRequest,
     ) -> Result<AttendanceResponse, AttendanceServiceError> {
-        let user_id = ObjectId::from_str(&request.user_id)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
-        let organization_id = ObjectId::from_str(&request.organization_id)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
+        let user_id = Uuid::parse_str(&request.user_id)
+            .map_err(|_| AttendanceServiceError::InvalidId("user_id".into()))?;
+        let organization_id = Uuid::parse_str(&request.organization_id)
+            .map_err(|_| AttendanceServiceError::InvalidId("organization_id".into()))?;
 
         let attendance = Attendance {
             user_id,
             organization_id,
-            attendance_type: request.attendance_type,
-            status: request.status,
+            date: request.date,
             clock_in: request.clock_in,
             clock_out: request.clock_out,
-            method: request.method,
-            location: request.location,
+            method: request.method.unwrap_or_else(Default::default),
+            status: request.status.unwrap_or_else(Default::default),
+            attendance_type: request.attendance_type.unwrap_or_else(Default::default),
+            lat: request.lat,
+            long: request.long,
             ..Default::default()
         };
 
-        let created_attendance = self
+        let created = self
             .attendance_repository
             .create_attendance(&attendance)
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
 
-        Ok(AttendanceResponse::from(created_attendance))
+        Ok(AttendanceResponse::from(created))
     }
 
     pub async fn get_attendance_by_id(
         &self,
-        attendance_id_str: &str,
+        id: &str,
     ) -> Result<Option<AttendanceResponse>, AttendanceServiceError> {
-        let attendance_id = ObjectId::from_str(attendance_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
+        let uuid =
+            Uuid::parse_str(id).map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
 
         let attendance = self
             .attendance_repository
-            .get_attendance_by_id(&attendance_id)
+            .get_attendance_by_id(uuid)
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
 
@@ -116,58 +115,57 @@ impl AttendanceService {
     pub async fn get_all_attendances(
         &self,
     ) -> Result<Vec<AttendanceResponse>, AttendanceServiceError> {
-        let attendances = self
+        let result = self
             .attendance_repository
             .get_all_attendances()
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
 
-        Ok(attendances
-            .into_iter()
-            .map(AttendanceResponse::from)
-            .collect())
+        Ok(result.into_iter().map(AttendanceResponse::from).collect())
     }
 
     pub async fn update_attendance(
         &self,
-        attendance_id_str: &str,
-        updated_request: UpdateAttendanceRequest,
+        id: &str,
+        req: UpdateAttendanceRequest,
     ) -> Result<AttendanceResponse, AttendanceServiceError> {
-        let attendance_id = ObjectId::from_str(attendance_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
+        let uuid =
+            Uuid::parse_str(id).map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
 
-        self.get_attendance_by_id(attendance_id_str)
-            .await?
-            .ok_or(AttendanceServiceError::NotFound)?;
-
-        let mut update_doc = to_document(&updated_request).map_err(|e| {
-            AttendanceServiceError::DbError(format!(
-                "Failed to convert update request to document: {}",
-                e
-            ))
-        })?;
-
-        update_doc.insert("updated_at", DateTime::now());
-
-        let updated_attendance = self
+        let mut existing = self
             .attendance_repository
-            .update_attendance(&attendance_id, update_doc)
+            .get_attendance_by_id(uuid)
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?
             .ok_or(AttendanceServiceError::NotFound)?;
 
-        Ok(AttendanceResponse::from(updated_attendance))
+        existing.clock_in = req.clock_in;
+        existing.clock_out = req.clock_out;
+        existing.date = req.date.unwrap_or(existing.date);
+        existing.method = req.method.unwrap_or_else(Default::default);
+        existing.status = req.status.unwrap_or_else(Default::default);
+        existing.attendance_type = req.attendance_type.unwrap_or_else(Default::default);
+        if let Some(loc) = req.location {
+            existing.lat = Some(loc.lat);
+            existing.long = Some(loc.long);
+        }
+        existing.updated_at = Utc::now();
+
+        let updated = self
+            .attendance_repository
+            .update_attendance(uuid, &existing)
+            .await
+            .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
+
+        Ok(AttendanceResponse::from(updated))
     }
 
-    pub async fn delete_attendance(
-        &self,
-        attendance_id_str: &str,
-    ) -> Result<(), AttendanceServiceError> {
-        let attendance_id = ObjectId::from_str(attendance_id_str)
-            .map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
+    pub async fn delete_attendance(&self, id: &str) -> Result<(), AttendanceServiceError> {
+        let uuid =
+            Uuid::parse_str(id).map_err(|e| AttendanceServiceError::InvalidId(e.to_string()))?;
 
         self.attendance_repository
-            .delete_attendance(&attendance_id)
+            .delete_attendance(uuid)
             .await
             .map_err(|e| AttendanceServiceError::DbError(e.to_string()))?;
 
