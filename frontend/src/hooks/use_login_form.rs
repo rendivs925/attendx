@@ -6,6 +6,7 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::web_sys::{HtmlInputElement, SubmitEvent};
+use leptos_router::hooks::use_navigate;
 use shared::types::requests::auth::validation_request::ValidationRequest;
 use shared::utils::locale_utils::{Lang, MessageLookup, MessagesHttp};
 use shared::utils::validation_utils::validate_data;
@@ -25,12 +26,12 @@ pub fn use_login_form() -> LoginFormState {
     let password = NodeRef::new();
     let error = RwSignal::new(None);
     let messages: RwSignal<Option<Arc<dyn MessageLookup>>> = RwSignal::new(None);
+    let navigate = use_navigate();
 
     spawn_local({
         let messages = messages.clone();
         async move {
             let loaded_messages = MessagesHttp::new(Lang::En).await;
-
             messages.set(Some(Arc::new(loaded_messages) as Arc<dyn MessageLookup>));
         }
     });
@@ -56,7 +57,6 @@ pub fn use_login_form() -> LoginFormState {
                 .get()
                 .map(|el: HtmlInputElement| el.value())
                 .unwrap_or_default();
-
             let password_value = password
                 .get()
                 .map(|el: HtmlInputElement| el.value())
@@ -70,6 +70,7 @@ pub fn use_login_form() -> LoginFormState {
 
             match validate_data(&req, lookup) {
                 Ok(_) => {
+                    let navigate = navigate.clone();
                     error.set(None);
 
                     spawn_local(async move {
@@ -77,7 +78,11 @@ pub fn use_login_form() -> LoginFormState {
                             email: email_value,
                             password: password_value,
                         };
-                        sign_in_with_email(auth_store, login_payload).await;
+                        let res = sign_in_with_email(auth_store, login_payload).await;
+
+                        if res.is_ok() {
+                            navigate("/".into(), Default::default());
+                        }
                     });
                 }
                 Err(e) => {

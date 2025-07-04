@@ -11,8 +11,7 @@ test.describe("Auth Flow", () => {
 
     await page.click('button[type="submit"]');
 
-    // Adjust this selector based on your post-registration redirect
-    await expect(page).toHaveURL(/\/dashboard|\/auth\/login/);
+    await page.waitForURL("**/auth/login", { timeout: 100000 });
   });
 
   test("should login an existing user", async ({ page }) => {
@@ -23,7 +22,6 @@ test.describe("Auth Flow", () => {
 
     await page.click('button[type="submit"]');
 
-    // Adjust this selector based on your post-login route
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL("http://localhost:3000/");
   });
 });

@@ -12,17 +12,14 @@ impl UserRepository {
     }
 
     pub async fn register_user(&self, user: &User) -> Result<User, Error> {
-        let rec = sqlx::query_as::<_, User>(
-            "INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4) RETURNING *",
+        sqlx::query_as::<_, User>(
+            "INSERT INTO users (id, name, email) VALUES ($1, $2, $3) RETURNING *",
         )
         .bind(user.id)
         .bind(&user.name)
         .bind(&user.email)
-        .bind(&user.password)
         .fetch_one(&self.pool)
-        .await?;
-
-        Ok(rec)
+        .await
     }
 
     pub async fn find_user(&self, email: &str) -> Result<Option<User>, Error> {
@@ -38,21 +35,17 @@ impl UserRepository {
             .await
     }
 
-    pub async fn update_user(
-        &self,
-        email: &str,
-        update: UpdateUserRequest,
-    ) -> Result<User, sqlx::Error> {
+    pub async fn update_user(&self, email: &str, update: UpdateUserRequest) -> Result<User, Error> {
         sqlx::query_as::<_, User>(
             r#"
-        UPDATE users
-        SET
-            name = COALESCE($1, name),
-            email = COALESCE($2, email),
-            updated_at = now()
-        WHERE email = $3
-        RETURNING id, name, email, role, status, created_at, updated_at
-        "#,
+            UPDATE users
+            SET
+                name = COALESCE($1, name),
+                email = COALESCE($2, email),
+                updated_at = now()
+            WHERE email = $3
+            RETURNING id, name, email, role, status, created_at, updated_at
+            "#,
         )
         .bind(update.name)
         .bind(update.email)
@@ -65,7 +58,7 @@ impl UserRepository {
         sqlx::query("DELETE FROM users WHERE email = $1")
             .bind(email)
             .execute(&self.pool)
-            .await?;
-        Ok(())
+            .await
+            .map(|_| ())
     }
 }

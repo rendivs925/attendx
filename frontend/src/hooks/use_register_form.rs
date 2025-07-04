@@ -5,7 +5,8 @@ use leptos::callback::Callback;
 use leptos::html;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos::web_sys::SubmitEvent;
+use leptos::web_sys::{HtmlInputElement, SubmitEvent};
+use leptos_router::hooks::use_navigate;
 use shared::types::requests::auth::validation_request::ValidationRequest;
 use shared::utils::locale_utils::{Lang, MessageLookup, MessagesHttp};
 use shared::utils::validation_utils::validate_data;
@@ -23,12 +24,13 @@ pub struct RegisterFormState {
 
 pub fn use_register_form() -> RegisterFormState {
     let auth_store = use_auth_store();
-    let name = NodeRef::<html::Input>::new();
-    let email = NodeRef::<html::Input>::new();
-    let password = NodeRef::<html::Input>::new();
-    let password_confirmation = NodeRef::<html::Input>::new();
+    let name = NodeRef::new();
+    let email = NodeRef::new();
+    let password = NodeRef::new();
+    let password_confirmation = NodeRef::new();
     let error = RwSignal::new(None);
     let messages: RwSignal<Option<Arc<dyn MessageLookup>>> = RwSignal::new(None);
+    let navigate = use_navigate();
 
     spawn_local({
         let messages = messages.clone();
@@ -38,7 +40,7 @@ pub fn use_register_form() -> RegisterFormState {
         }
     });
 
-    let on_submit = {
+    let on_submit = Callback::new({
         let name = name.clone();
         let email = email.clone();
         let password = password.clone();
@@ -47,7 +49,7 @@ pub fn use_register_form() -> RegisterFormState {
         let messages = messages.clone();
         let auth_store = auth_store.clone();
 
-        Callback::new(move |ev: SubmitEvent| {
+        move |ev: SubmitEvent| {
             ev.prevent_default();
 
             let Some(msgs_arc) = messages.get() else {
@@ -57,12 +59,21 @@ pub fn use_register_form() -> RegisterFormState {
 
             let lookup: &dyn MessageLookup = &*msgs_arc;
 
-            let name_value = name.get().map(|el| el.value()).unwrap_or_default();
-            let email_value = email.get().map(|el| el.value()).unwrap_or_default();
-            let password_value = password.get().map(|el| el.value()).unwrap_or_default();
+            let name_value = name
+                .get()
+                .map(|el: HtmlInputElement| el.value())
+                .unwrap_or_default();
+            let email_value = email
+                .get()
+                .map(|el: HtmlInputElement| el.value())
+                .unwrap_or_default();
+            let password_value = password
+                .get()
+                .map(|el: HtmlInputElement| el.value())
+                .unwrap_or_default();
             let password_confirmation_value = password_confirmation
                 .get()
-                .map(|el| el.value())
+                .map(|el: HtmlInputElement| el.value())
                 .unwrap_or_default();
 
             let req = ValidationRequest {
@@ -84,6 +95,8 @@ pub fn use_register_form() -> RegisterFormState {
                         return;
                     }
 
+                    let navigate = navigate.clone();
+
                     error.set(None);
 
                     spawn_local(async move {
@@ -93,15 +106,20 @@ pub fn use_register_form() -> RegisterFormState {
                             password: password_value,
                             password_confirmation: password_confirmation_value,
                         };
-                        register_with_email(auth_store, register_payload).await;
+
+                        let res = register_with_email(auth_store, register_payload).await;
+
+                        if res.is_ok() {
+                            navigate("/auth/login".into(), Default::default());
+                        }
                     });
                 }
                 Err(e) => {
                     error.set(Some(e));
                 }
             }
-        })
-    };
+        }
+    });
 
     RegisterFormState {
         name,

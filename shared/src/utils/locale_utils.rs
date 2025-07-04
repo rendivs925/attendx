@@ -45,7 +45,6 @@ pub enum Namespace {
     Common,
     Organization,
     Attendance,
-    OrganizationMember,
 }
 
 impl fmt::Display for Namespace {
@@ -60,7 +59,6 @@ impl fmt::Display for Namespace {
                 Namespace::Common => "common",
                 Namespace::Organization => "organization",
                 Namespace::Attendance => "attendance",
-                Namespace::OrganizationMember => "organization_member",
             }
         )
     }
@@ -78,7 +76,7 @@ pub enum MessageError {
     InvalidType { namespace: Namespace, path: String },
 }
 
-fn default_namespaces() -> [Namespace; 7] {
+fn default_namespaces() -> [Namespace; 6] {
     [
         Namespace::User,
         Namespace::Validation,
@@ -86,7 +84,6 @@ fn default_namespaces() -> [Namespace; 7] {
         Namespace::Common,
         Namespace::Organization,
         Namespace::Attendance,
-        Namespace::OrganizationMember,
     ]
 }
 

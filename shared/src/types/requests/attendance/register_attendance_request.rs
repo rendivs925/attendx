@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::models::attendance::{
     attendance_method::AttendanceMethod, attendance_status::AttendanceStatus,
-    attendance_type::AttendanceType, geolocation::GeoLocation,
+    attendance_type::AttendanceType,
 };
 
 #[derive(Debug, Serialize, Deserialize)]

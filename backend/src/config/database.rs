@@ -11,11 +11,6 @@ pub struct Database {
 
 impl Database {
     pub async fn new() -> Result<Self, SqlxError> {
-        info!(
-            "Attempting to connect to PostgreSQL at {}",
-            DATABASE_URL.as_str()
-        );
-
         let pool = match PgPoolOptions::new()
             .max_connections(10)
             .acquire_timeout(Duration::from_secs(5))
@@ -23,11 +18,11 @@ impl Database {
             .await
         {
             Ok(pool) => {
-                info!("✅ Connected to PostgreSQL (Supabase)");
+                info!("Connected to PostgreSQL (Supabase)");
                 pool
             }
             Err(e) => {
-                error!("❌ Failed to connect to PostgreSQL: {}", e);
+                error!("Failed to connect to PostgreSQL: {}", e);
                 return Err(e);
             }
         };

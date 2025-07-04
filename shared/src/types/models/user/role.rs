@@ -1,9 +1,11 @@
+use async_graphql::Enum;
 use serde::{Deserialize, Serialize};
+use strum_macros::Display;
 
 #[cfg(feature = "backend")]
 use sqlx::Type;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Display, Copy, Enum, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "backend", derive(Type))]
 #[cfg_attr(
     feature = "backend",

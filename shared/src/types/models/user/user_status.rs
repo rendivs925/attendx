@@ -1,3 +1,4 @@
+use async_graphql::Enum;
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 
@@ -9,7 +10,7 @@ use sqlx::Type;
     feature = "backend",
     sqlx(type_name = "user_status", rename_all = "lowercase")
 )]
-#[derive(Debug, Display, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Enum, Copy, Display, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UserStatus {
     Active,
